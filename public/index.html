@@ -1,108 +1,19 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="https://static.toss.im/icons/png/4x/icon-toss-logo.png" />
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>토스페이먼츠 샘플 프로젝트</title>
-    <!-- 토스페이먼츠 SDK 추가 -->
-    <script src="https://js.tosspayments.com/v2/standard"></script>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <title>포트원 결제 테스트</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="https://assets.portone.io/icons/favicon.ico" />
+  <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+</head>
+<body>
+  <div id="app"></div>
 
-  <body>
-    <!-- 주문서 영역 -->
-    <div class="wrapper">
-      <div class="box_section" style="padding: 40px 30px 50px 30px; margin-top: 30px; margin-bottom: 50px">
-        <!-- 결제 UI -->
-        <div id="payment-method"></div>
-        <!-- 이용약관 UI -->
-        <div id="agreement"></div>
-        <!-- 쿠폰 체크박스 -->
-        <div style="padding-left: 25px">
-          <div class="checkable typography--p">
-            <label for="coupon-box" class="checkable__label typography--regular">
-              <input id="coupon-box" class="checkable__input" type="checkbox" aria-checked="true" />
-              <span class="checkable__label-text">5,000원 쿠폰 적용</span>
-            </label>
-          </div>
-        </div>
-        <!-- 결제하기 버튼 -->
-        <div class="result wrapper">
-          <button class="button" id="payment-button" style="margin-top: 30px">
-            결제하기
-          </button>
-        </div>
-      </div>
-    </div>
+  <!-- 모달 영역 (처음에도 숨겨두지 않은 상태) -->
+  <div id="homeModal"></div>
 
-    <script type="module">
-      main();
-
-      async function main() {
-        const button = document.getElementById("payment-button");
-        const coupon = document.getElementById("coupon-box");
-        const amount = {
-          currency: "KRW",
-          value: 50000,
-        };
-
-        // ------  결제위젯 초기화 ------
-        const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;// 개발자 센터의 클라이언트 키
-        const customerKey = generateRandomString(); // 고유 고객키 생성
-        const tossPayments = TossPayments(clientKey);
-        const widgets = tossPayments.widgets({ customerKey });
-
-        // 주문서의 결제 금액 설정
-        await widgets.setAmount(amount);
-
-        // 결제 UI 렌더링
-        await widgets.renderPaymentMethods({
-          selector: "#payment-method",
-          variantKey: "DEFAULT",
-        });
-
-        // 이용약관 UI 렌더링
-        await widgets.renderAgreement({
-          selector: "#agreement",
-          variantKey: "AGREEMENT",
-        });
-
-        // 결제 금액 업데이트 (쿠폰 적용)
-        coupon.addEventListener("change", async function () {
-          if (coupon.checked) {
-            await widgets.setAmount({
-              currency: "KRW",
-              value: amount.value - 5000, // 쿠폰 적용
-            });
-            return;
-          }
-          await widgets.setAmount({
-            currency: "KRW",
-            value: amount.value,
-          });
-        });
-
-        // 결제하기 버튼 클릭 시 결제 요청
-        button.addEventListener("click", async function () {
-          // 결제 정보 서버에 저장 후 결제 요청
-          await widgets.requestPayment({
-            orderId: generateRandomString(),
-            orderName: "토스 티셔츠 외 2건",
-            successUrl: window.location.origin + "/success.html",
-            failUrl: window.location.origin + "/fail.html",
-            customerEmail: "customer123@gmail.com",
-            customerName: "김토스",
-            customerMobilePhone: "01012341234",
-          });
-        });
-      }
-
-      // 랜덤 문자열 생성 함수
-      function generateRandomString() {
-        return window.btoa(Math.random()).slice(0, 20);
-      }
-    </script>
-  </body>
+  <!-- 메인 스크립트 -->
+  <script type="module" src="/src/main.ts"></script>
+</body>
 </html>
