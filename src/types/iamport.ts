@@ -21,6 +21,6 @@ declare global {
     buyer_tel?: string;
     buyer_addr?: string;
     buyer_postcode?: string;
-    m_redirect_url?: string; // 결제 완료 후 리다이렉트 URL
+    m_redirect_url?: string; // 결제 완료 후 리다이렉트 URL   
   }
   
