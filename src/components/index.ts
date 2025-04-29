@@ -30,6 +30,13 @@ export function initHomePage(): void {
     console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
   }
 
+  const currentUrl = window.location.href;
+  
+  // 현재 페이지가 메인 페이지인지 확인
+  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com';
+  
+  if (!isMainPage) {
+
   // 💡 Cafe24 페이지로부터 상품 정보 받기
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
@@ -107,12 +114,7 @@ export function initHomePage(): void {
     });
   });
 
-  const currentUrl = window.location.href;
   
-  // 현재 페이지가 메인 페이지인지 확인
-  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com';
-  
-  if (!isMainPage) {
     // 메인 페이지가 아니면 toss-pg.vercel.app로 이동
     alert('kg이니시스 결제 가능합니다!');  
     const popupScript = document.createElement('script');
