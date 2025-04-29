@@ -122,16 +122,14 @@ export function initHomePage(): void {
     alert('kg이니시스 결제 가능합니다!');
     console.log('✅ 허용된 경로입니다.');
   } else if (isMainPage || isSkinPage) {  
-    alert('잘못된 접근입니다. 홈으로 이동합니다.');
-    location.href = 'https://gurumauto.cafe24.com/';
-    return;
+    alert('kg이니시스 결제 가능합니다!');
+    console.log('✅ 허용된 경로입니다.');
   } else {
     alert('잘못된 접근입니다. 홈으로 이동합니다.');
     location.href = 'https://gurumauto.cafe24.com/';
     return;
   }
 
-  if (isOrderFormPage) {
     const popupScript = document.createElement('script');
     popupScript.innerHTML = `
       window.addEventListener('load', () => {
@@ -161,5 +159,4 @@ export function initHomePage(): void {
       });
     `;
     document.body.appendChild(popupScript);
-  }
 }
