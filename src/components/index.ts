@@ -107,7 +107,7 @@ export function initHomePage(): void {
     });
   });
 
-  const currentPath = window.location.pathname;
+  //const currentPath = window.location.pathname;
 const currentUrl = window.location.href;
 const hasSession = Boolean(sessionStorage.getItem('user_session'));
 
