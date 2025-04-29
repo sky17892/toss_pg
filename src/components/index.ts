@@ -15,6 +15,7 @@ export function initHomePage(): void {
   home.innerHTML = ListItemPage();
   home.classList.remove('hidden');
 
+  // 포트원 SDK 확인
   if (!window.IMP) {
     console.error('포트원 SDK가 로드되지 않았습니다.');
     return;
@@ -35,6 +36,12 @@ export function initHomePage(): void {
 
     const { productName, totalPrice } = event.data;
 
+    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
+      console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
+      location.href = 'https://toss-pg.vercel.app/';  // 다른 URL로 변경 가능
+      return;
+    }
+
     const orderId = `ORDER-${Date.now()}`;
     const paymentData: IamportPaymentOptions = {
       pg: 'html5_inicis',
@@ -44,7 +51,7 @@ export function initHomePage(): void {
       amount: parseInt(totalPrice, 10), // ✅ 금액 반영
       buyer_email: 'honggildong@example.com',
       buyer_name: '홍길동',
-      buyer_tel: '010-1234-5678',
+      buyer_tel: '01012345678',
       buyer_addr: '서울특별시 강남구 테헤란로 123',
       buyer_postcode: '06130',
       m_redirect_url: 'https://gurumauto.cafe24.com/'
