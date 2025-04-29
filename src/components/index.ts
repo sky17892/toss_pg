@@ -15,7 +15,6 @@ export function initHomePage(): void {
   home.innerHTML = ListItemPage();
   home.classList.remove('hidden');
 
-  // 포트원 SDK 확인
   if (!window.IMP) {
     console.error('포트원 SDK가 로드되지 않았습니다.');
     return;
@@ -36,19 +35,19 @@ export function initHomePage(): void {
 
     const { productName, totalPrice } = event.data;
 
-    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
+    /*if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
-      location.href = 'https://toss-pg.vercel.app/';  // 다른 URL로 변경 가능
+      location.href = 'https://gurumauto.cafe24.com/';
       return;
-    }
+    }*/
 
     const orderId = `ORDER-${Date.now()}`;
     const paymentData: IamportPaymentOptions = {
       pg: 'html5_inicis',
       pay_method: 'card',
       merchant_uid: orderId,
-      name: productName, // ✅ 상품명 반영
-      amount: parseInt(totalPrice, 10), // ✅ 금액 반영
+      name: productName,
+      amount: parseInt(totalPrice, 10),
       buyer_email: 'honggildong@example.com',
       buyer_name: '홍길동',
       buyer_tel: '01012345678',
@@ -57,7 +56,6 @@ export function initHomePage(): void {
       m_redirect_url: 'https://gurumauto.cafe24.com/'
     };
 
-    // 🧨 포트원 결제창 호출
     IMP.request_pay(paymentData, function (rsp: any) {
       const resultDiv = document.getElementById('payment-result');
       if (!resultDiv) return;
@@ -108,48 +106,59 @@ export function initHomePage(): void {
   });
 
   const currentUrl = window.location.href;
-  
-  // 현재 페이지가 메인 페이지인지 확인
-  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com';
-  
-  if (isMainPage) {
+  const hasSession = Boolean(sessionStorage.getItem('user_session'));
+
+  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
+  const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
+  const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html');
+
+  if (!hasSession) {
     alert('주문서가 없습니다. 주문서를 등록해주십시요!');
-    console.log('✅ 메인 페이지에 접속됨: gurumauto.cafe24.com');
-    // 추가적인 동작이 필요하면 여기에 작성
-  location.href = 'https://gurumauto.cafe24.com/';
-  return;
+    location.href = 'https://gurumauto.cafe24.com/';
+    return;
+  }
+
+  if (isOrderFormPage) {
+    alert('kg이니시스 결제 가능합니다!');
+  } else if (isMainPage || isSkinPage) {
+    console.log('✅ 허용된 경로입니다.');
+    alert('kg이니시스 결제 가능합니다!');
   } else {
-    
-  // 메인 페이지가 아니면 toss-pg.vercel.app로 이동
-  alert('kg이니시스 결제 가능합니다!');  
-  const popupScript = document.createElement('script');
-  popupScript.innerHTML = `
-    window.addEventListener('load', () => {d
-      const productEl = document.querySelector('.prdName .ec-product-name');
-      const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
-  
-      const quantity = Array.from(document.querySelectorAll('.description li'))
-        .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
-  
-      const totalPriceElement = '80000원';
-      const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
-  
-      if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
-        alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
-        console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
-        return;
-      }
-  
-      const payload = {
-        type: 'orderInfo',
-        productName: \`\${productName} 외 \${quantity}개\`,
-        totalPrice
-      };
-  
-      window.opener?.postMessage(payload, '*');
-      window.parent?.postMessage(payload, '*');
-    });
-  `;
-  document.body.appendChild(popupScript);
-}  
+    alert('잘못된 접근입니다. 홈으로 이동합니다.');
+    location.href = 'https://gurumauto.cafe24.com/';
+    return;
+  }
+
+  // ✅ 조건에 맞을 때만 script 삽입
+  if (isOrderFormPage || isMainPage || isSkinPage) {
+    const popupScript = document.createElement('script');
+    popupScript.innerHTML = `
+      window.addEventListener('load', () => {
+        const productEl = document.querySelector('.prdName .ec-product-name');
+        const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
+
+        const quantity = Array.from(document.querySelectorAll('.description li'))
+          .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
+
+        const totalPriceElement = '80000원';
+        const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
+
+        if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
+          alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+          console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+          return;
+        }
+
+        const payload = {
+          type: 'orderInfo',
+          productName: \`\${productName} 외 \${quantity}개\`,
+          totalPrice
+        };
+
+        window.opener?.postMessage(payload, '*');
+        window.parent?.postMessage(payload, '*');
+      });
+    `;
+    document.body.appendChild(popupScript);
+  }
 }
