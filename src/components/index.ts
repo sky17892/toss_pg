@@ -111,6 +111,7 @@ export function initHomePage(): void {
   const referrer = document.referrer;
 
   if (!referrer.startsWith(validReferrerPrefix)) {
+    alert('잘못된 접근입니다. 주문서 페이지에서만 결제가 가능합니다.');
     console.warn('잘못된 접근입니다. 주문서 페이지가 아닙니다.');
     location.href = 'https://gurumauto.cafe24.com/';
     return;
@@ -119,14 +120,7 @@ export function initHomePage(): void {
   //const productName = productEl?.textContent?.trim() || '상품명 없음';
   const popupScript = document.createElement('script');
 popupScript.innerHTML = `
-  window.addEventListener('load', () => {
-    const validReferrerPrefix = 'https://gurumauto.cafe24.com/';
-    const referrer = document.referrer;
-
-    if (!referrer.startsWith(validReferrerPrefix)) {
-      console.warn('잘못된 접근입니다. 주문서 페이지가 아닙니다.');
-      return;
-    }
+  window.addEventListener('load', () => {    
 
     const productEl = document.querySelector('.prdName .ec-product-name');
     const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
@@ -137,8 +131,9 @@ popupScript.innerHTML = `
     const totalPriceElement = '80000원';
     const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
 
-    if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0 || !referrer.startsWith(validReferrerPrefix) {
-      console.warn('상품 정보가 부족하거나 금액이 잘못되었거나 잘못된 접근입니다. 주문서 페이지가 아닙니다..');
+    if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
+      alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+      console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
       return;
     }
 
