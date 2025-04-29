@@ -108,14 +108,14 @@ export function initHomePage(): void {
   });
 
   const currentUrl = window.location.href;
+  const hasSession = Boolean(sessionStorage.getItem('user_session'));
 
-// 정확히 'https://gurumauto.cafe24.com/' 경로인 경우만 해당
-if (currentUrl === 'https://gurumauto.cafe24.com/') {
-  // 정확히 gurumauto.cafe24.com/일 경우는 그대로 유지
-  console.log('✅ Current page is the home page: gurumauto.cafe24.com/');
-  alert('주문서가 없습니다. 주문서를 작성해주세요!');
-  return;
-} 
+  if (!hasSession || currentUrl !== 'https://gurumauto.cafe24.com/') {
+    console.warn('세션 없음 또는 잘못된 경로 → 홈으로 이동');
+    location.href = 'https://gurumauto.cafe24.com/';
+    return;
+  }
+
   alert('kg이니시스 결제 가능합니다!');
 
   //const productName = productEl?.textContent?.trim() || '상품명 없음';
