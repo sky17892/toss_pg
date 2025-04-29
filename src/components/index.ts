@@ -106,22 +106,20 @@ export function initHomePage(): void {
   });
 
   const currentUrl = window.location.href;
-  //const hasSession = Boolean(sessionStorage.getItem('user_session'));
+const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
+const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
 
-  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
-  const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
-  const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
+if (isMainPage) {
+  // 메인 페이지일 경우에만 강제 리다이렉트
+  alert('kg이니시스 결제를 위해 결제 페이지로 이동합니다.');
+  location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
+  return;
+}
 
-  const alreadyRedirected = sessionStorage.getItem('alreadyRedirected');
-
-  if (!isOrderFormPage && (isMainPage || isSkinPage)) {
-   if (!alreadyRedirected) {
-      alert('kg이니시스 결제 가능합니다! 실제 결제는 orderform 페이지에서 진행됩니다.');
-      sessionStorage.setItem('alreadyRedirected', 'true');
-      location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
-      return;
-    }
-  }  
+if (isOrderFormPage) {
+  // 메인도 아니고, 결제 페이지도 아니라면 실행하지 않음
+  console.log('kg이니시스 결제를 위해 결제 페이지로 이동합니다.');  
+}
   
     // ✅ 이동된 이후엔 popupScript만 실행
     const popupScript = document.createElement('script');
