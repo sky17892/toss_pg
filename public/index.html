@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>포트원 결제 테스트</title>
+  <title>주문 정보 및 결제 처리</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="/favicon.ico" />
   <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
@@ -11,38 +11,45 @@
   <div id="app"></div>
 
   <!-- 모달 영역 (처음에도 숨겨두지 않은 상태) -->
-  <div id="homeModal"></div>
+  <div id="homeModal" class="hidden"></div>
 
-  <!-- 메인 스크립트 -->
-  <script type="module" src="/src/main.ts"></script>  
+  <!-- 결제 결과 표시 영역 -->
+  <div id="payment-result"></div>
 
-  
+  <!-- 메인 스크립트 (index.ts로 빌드된 js 파일) -->
+  <script type="module" src="/src/main.ts"></script>
+
   <script>
+    // 페이지가 로드되면 아래 코드가 실행됩니다.
     window.addEventListener('load', () => {
-      // 상품명
-      const productEl = document.querySelector('.prdName .ec-product-name');
-      const productName = productEl?.textContent?.trim() || '상품명 없음';
+      // 외부 페이지에서 상품 정보를 가져오기 위해 iframe 방식으로 로딩
+      const gurumautoUrl = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
 
-      // 수량
-      const quantity = Array.from(document.querySelectorAll('.description li'))
-        .find(li => li.textContent.includes('수량'))?.textContent.match(/\d+/)?.[0] || '1';
+      // iframe을 통해 해당 페이지를 로드하고, 메시지를 전달받습니다.
+      const iframe = document.createElement('iframe');
+      iframe.src = gurumautoUrl;
+      iframe.style.display = 'none';  // iframe을 화면에 보이지 않게 처리
+      document.body.appendChild(iframe);
 
-      // 총 결제 금액
-      //const totalPrice = document.getElementById('payment_total_order_sale_price_view')
-      //?.textContent?.replace(/[^0-9]/g, '') || '0';
-      const totalPriceElement = '80000원';
-      const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
+      // iframe으로부터 메시지 수신
+      iframe.contentWindow.postMessage({ type: 'orderInfo' }, gurumautoUrl);
 
-      // payload 데이터 준비
-      const payload = {
-        type: 'orderInfo',
-        productName: `${productName} 외 ${quantity}개`,
-        totalPrice
-      };
+      // iframe에서 오는 메시지 수신
+      window.addEventListener('message', (event) => {
+        if (event.origin !== gurumautoUrl) return;  // 보안 체크
 
-      // 부모 창에 메시지 전송 (팝업 또는 iframe)
-      window.opener?.postMessage(payload, '*'); // 팝업 방식
-      window.parent?.postMessage(payload, '*'); // iframe 방식
+        const { productName, totalPrice } = event.data;
+        
+        // 받은 정보를 페이지에서 표시
+        const homeModal = document.querySelector('#homeModal');
+        if (homeModal) {
+          homeModal.innerHTML = `
+            <h2>상품명: ${productName}</h2>
+            <h3>총 결제 금액: ${Number(totalPrice).toLocaleString()}원</h3>
+          `;
+          homeModal.classList.remove('hidden');
+        }
+      });
     });
   </script>
 </body>
