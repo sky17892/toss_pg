@@ -22,19 +22,25 @@ export function initHomePage(): void {
 
   const IMP = window.IMP;
   const IMP_USER_CODE = import.meta.env.VITE_IMP_USER_CODE;
+
   if (IMP_USER_CODE) {
     IMP.init(IMP_USER_CODE);
   } else {
     console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
   }
 
-  // ✅ 메시지 수신 후 결제 처리
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
     const { productName, totalPrice } = event.data;
-    const orderId = `ORDER-${Date.now()}`;
 
+    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
+      console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
+      location.href = 'https://gurumauto.cafe24.com/';
+      return;
+    }
+
+    const orderId = `ORDER-${Date.now()}`;
     const paymentData: IamportPaymentOptions = {
       pg: 'html5_inicis',
       pay_method: 'card',
@@ -58,31 +64,38 @@ export function initHomePage(): void {
 
         fetch('/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imp_uid: rsp.imp_uid, merchant_uid: rsp.merchant_uid })
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              resultDiv.innerHTML = `
-                <h2 class="success">✅ 결제가 정상적으로 완료되었습니다.</h2>
-                <p>주문번호: ${rsp.merchant_uid}</p>
-                <p>결제 금액: ${rsp.paid_amount}원</p>
-              `;
-            } else {
-              resultDiv.innerHTML = `
-                <h2 class="error">❌ 결제 검증 실패</h2>
-                <p>메시지: ${data.message}</p>
-              `;
-            }
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            imp_uid: rsp.imp_uid,
+            merchant_uid: rsp.merchant_uid
           })
-          .catch(error => {
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
             resultDiv.innerHTML = `
-              <h2 class="error">❌ 서버 오류로 결제 검증 실패</h2>
-              <p>${error}</p>
+              <h2 class="success">✅ 결제가 정상적으로 완료되었습니다.</h2>
+              <p>주문번호: ${rsp.merchant_uid}</p>
+              <p>결제 금액: ${rsp.paid_amount}원</p>
             `;
-          });
+          } else {
+            resultDiv.innerHTML = `
+              <h2 class="error">❌ 결제 검증 실패</h2>
+              <p>메시지: ${data.message}</p>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('서버 통신 실패:', error);
+          resultDiv.innerHTML = `
+            <h2 class="error">❌ 서버 오류로 결제 검증 실패</h2>
+            <p>${error}</p>
+          `;
+        });
       } else {
+        console.error("결제 실패:", rsp);
         resultDiv.innerHTML = `
           <h2 class="error">❌ 결제에 실패했습니다</h2>
           <p>실패 사유: ${rsp.error_msg}</p>
@@ -97,25 +110,32 @@ export function initHomePage(): void {
   const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
   const alreadyRedirected = sessionStorage.getItem('alreadyRedirected');
 
-  // ✅ 1. 메인/스킨 페이지 → orderform으로 리디렉션
-  if ((isMainPage || isSkinPage) && !alreadyRedirected) {
-    sessionStorage.setItem('alreadyRedirected', 'true');
-    alert('KG이니시스 결제를 위해 orderform 페이지로 이동합니다.');
-    location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
-    return;
+  if (!isOrderFormPage && (isMainPage || isSkinPage)) {
+    if (!alreadyRedirected) {
+      alert('kg이니시스 결제 가능합니다! 실제 결제는 orderform 페이지에서 진행됩니다.');
+      sessionStorage.setItem('alreadyRedirected', 'true');
+      location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
+      return;
+    }
   }
 
-  // ✅ 2. orderform 페이지에서는 상품 정보 수집 및 toss-pg에 전달
-  if (isOrderFormPage) {
+  // ✅ 아래는 조건이 맞을 때만 실행
+  if (isOrderFormPage || alreadyRedirected) {
     const popupScript = document.createElement('script');
     popupScript.innerHTML = `
       window.addEventListener('load', () => {
-        const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜';
-        const quantity = '1'; // 실제 DOM에서 추출 필요
-        const totalPrice = '80000'; // 실제 가격 추출 로직 필요
+        const productEl = document.querySelector('.prdName .ec-product-name');
+        const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
+
+        const quantity = Array.from(document.querySelectorAll('.description li'))
+          .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
+
+        const totalPriceElement = '80000원';
+        const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
 
         if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
           alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+          console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
           return;
         }
 
@@ -125,12 +145,8 @@ export function initHomePage(): void {
           totalPrice
         };
 
-        const newWin = window.open('https://toss-pg.vercel.app/', '_blank');
-        if (newWin) {
-          setTimeout(() => newWin.postMessage(payload, '*'), 1000); // 약간의 딜레이 필요
-        } else {
-          alert('팝업 차단 해제를 해주세요.');
-        }
+        window.opener?.postMessage(payload, '*');
+        window.parent?.postMessage(payload, '*');
       });
     `;
     document.body.appendChild(popupScript);
