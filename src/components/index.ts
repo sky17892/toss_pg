@@ -144,7 +144,7 @@ export function initHomePage(): void {
       });
     `;
     document.body.appendChild(popupScript);
-    return;
+    
   } else if (isMainPage || isSkinPage) {  
     alert('kg이니시스 결제 가능합니다!');
     console.log('✅ 허용된 경로입니다.');
@@ -177,7 +177,7 @@ export function initHomePage(): void {
       });
     `;
     document.body.appendChild(popupScript);
-    return;
+    
   } else {
     alert('잘못된 접근입니다. 홈으로 이동합니다.');
     location.href = 'https://gurumauto.cafe24.com/';
