@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>포트원 결제 테스트</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="https://www.google.com/favicon.ico" />
+  <link rel="icon" href="/favicon.ico" />
   <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
 </head>
 <body>
@@ -15,5 +15,32 @@
 
   <!-- 메인 스크립트 -->
   <script type="module" src="/src/main.ts"></script>
+
+  <script>
+    window.addEventListener('load', () => {
+      // 상품명
+      const productEl = document.querySelector('.prdName .ec-product-name');
+      const productName = productEl?.textContent?.trim() || '상품명 없음';
+
+      // 수량
+      const quantity = Array.from(document.querySelectorAll('.description li'))
+        .find(li => li.textContent.includes('수량'))?.textContent.match(/\d+/)?.[0] || '1';
+
+      // 총 결제 금액
+      const totalPrice = document.getElementById('payment_total_order_sale_price_view')
+        ?.textContent?.replace(/[^0-9]/g, '') || '0';
+
+      // payload 데이터 준비
+      const payload = {
+        type: 'orderInfo',
+        productName: `${productName} 외 ${quantity}개`,
+        totalPrice
+      };
+
+      // 부모 창에 메시지 전송 (팝업 또는 iframe)
+      window.opener?.postMessage(payload, '*'); // 팝업 방식
+      window.parent?.postMessage(payload, '*'); // iframe 방식
+    });
+  </script>
 </body>
 </html>
