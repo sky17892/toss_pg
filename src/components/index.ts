@@ -111,8 +111,7 @@ const isFromMainPage = document.referrer === 'https://gurumauto.cafe24.com/';
 
 // 주문서 페이지가 아닐 경우 처리
 if (!isOrderFormPage) {
-  if (isFromMainPage) {
-    alert('결제모듈로 이동합니다!');
+  if (isFromMainPage) {    
     const popupScript = document.createElement('script');
   popupScript.innerHTML = `
     window.addEventListener('load', () => {
@@ -148,6 +147,8 @@ if (!isOrderFormPage) {
     });
   `;
   document.body.appendChild(popupScript);
+  alert('결제모듈로 이동합니다!');
+  return;
   } else {
     alert('주문서 페이지에서만 결제가 가능합니다.');
     location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
