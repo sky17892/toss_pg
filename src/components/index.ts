@@ -105,26 +105,34 @@ export function initHomePage(): void {
         `;
       }
     });
-  });
-
-  const validReferrerPrefix = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
-  const referrer = document.referrer;
-
-  if (!referrer.startsWith(validReferrerPrefix)) {
-    alert('잘못된 접근입니다. 주문서 페이지에서만 결제가 가능합니다.');
-    console.warn('잘못된 접근입니다. 주문서 페이지가 아닙니다.');
-    location.href = 'https://gurumauto.cafe24.com/';
-    return;
-  }else{
-    alert('kg이니시스 결제가 가능합니다.');
-    location.href = 'https://toss-pg.vercel.app/';
-  }
+  });  
 
   //const productName = productEl?.textContent?.trim() || '상품명 없음';
   const popupScript = document.createElement('script');
 popupScript.innerHTML = `
-  window.addEventListener('load', () => {    
+  window.addEventListener('load', () => {
+    // ✅ Referrer 검사
+    const referrer = document.referrer;
+    try {
+      const referrerUrl = new URL(referrer);
 
+      if (!referrerUrl.searchParams.has('basket_type')) {
+        alert('주문서가 없어서 결제가 안됩니다! 주문서를 작성해주십시요!');
+        console.warn('Referrer에 basket_type 없음 → gurumauto로 이동');
+        location.href = 'https://gurumauto.cafe24.com/';
+        return;
+      } else {
+        console.log('✅ basket_type 존재 → KG이니시스 결제 가능');
+        alert('KG이니시스 결제 가능합니다!');
+      }
+    } catch (error) {
+      console.error('잘못된 referrer URL:', error);
+      alert('유효하지 않은 주문 접근입니다. 메인 페이지로 이동합니다.');
+      location.href = 'https://gurumauto.cafe24.com/';
+      return;
+    }
+
+    // ✅ 상품 정보 수집 및 전송
     const productEl = document.querySelector('.prdName .ec-product-name');
     const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
 
