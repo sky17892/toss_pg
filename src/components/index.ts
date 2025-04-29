@@ -112,40 +112,45 @@ export function initHomePage(): void {
   const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
   const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
 
-   if (!isOrderFormPage || isMainPage || isSkinPage) {  
-    alert('kg이니시스 결제 가능합니다! 실제 결제는 https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A 페이지로 이동해야합니다!');
-    //location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';    
-    
-  }
-  
+  const alreadyRedirected = sessionStorage.getItem('alreadyRedirected');
 
+  if (!isOrderFormPage && (isMainPage || isSkinPage)) {
+    if (!alreadyRedirected) {
+      alert('kg이니시스 결제 가능합니다! 실제 결제는 orderform 페이지에서 진행됩니다.');
+      sessionStorage.setItem('alreadyRedirected', 'true');
+      location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
+      return;
+    }
+  
+    // ✅ 이동된 이후엔 popupScript만 실행
     const popupScript = document.createElement('script');
     popupScript.innerHTML = `
       window.addEventListener('load', () => {
         const productEl = document.querySelector('.prdName .ec-product-name');
         const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
-
+  
         const quantity = Array.from(document.querySelectorAll('.description li'))
           .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
-
+  
         const totalPriceElement = '80000원';
         const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
-
+  
         if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
           alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
           console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
           return;
         }
-
+  
         const payload = {
           type: 'orderInfo',
           productName: \`\${productName} 외 \${quantity}개\`,
           totalPrice
         };
-
+  
         window.opener?.postMessage(payload, '*');
         window.parent?.postMessage(payload, '*');
       });
     `;
     document.body.appendChild(popupScript);
-}
+  }
+}  
