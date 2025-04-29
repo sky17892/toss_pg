@@ -108,11 +108,13 @@ export function initHomePage(): void {
   });
 
   // Cafe24 페이지가 팝업으로 열릴 때 주문 정보를 전송하도록 로드 이벤트 처리
+  //const productName = productEl?.textContent?.trim() || '상품명 없음';
   const popupScript = document.createElement('script');
   popupScript.innerHTML = `
     window.addEventListener('load', () => {
       const productEl = document.querySelector('.prdName .ec-product-name');
-      const productName = productEl?.textContent?.trim() || '상품명 없음';
+      const popupScript = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜';    
+      const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';     
 
       const quantity = Array.from(document.querySelectorAll('.description li'))
         .find(li => li.textContent.includes('수량'))?.textContent.match(/\d+/)?.[0] || '1';
