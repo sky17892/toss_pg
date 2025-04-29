@@ -30,15 +30,27 @@ export function initHomePage(): void {
     console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
   }
 
+  // 💡 Cafe24 페이지를 iframe으로 로드하고 메시지를 요청
+  const gurumautoUrl = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
+  const iframe = document.createElement('iframe');
+  iframe.src = gurumautoUrl;
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  iframe.onload = () => {
+    iframe.contentWindow?.postMessage({ type: 'orderInfo' }, '*');
+  };
+
   // 💡 Cafe24 페이지로부터 상품 정보 받기
   window.addEventListener('message', (event) => {
+    // origin 체크 생략 또는 필요 시 gurumautoUrl로 정제 필요
     if (!event.data || event.data.type !== 'orderInfo') return;
 
     const { productName, totalPrice } = event.data;
 
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
-      location.href = 'https://toss-pg.vercel.app/';  // 다른 URL로 변경 가능
+      location.href = 'https://toss-pg.vercel.app/';
       return;
     }
 
@@ -47,8 +59,8 @@ export function initHomePage(): void {
       pg: 'html5_inicis',
       pay_method: 'card',
       merchant_uid: orderId,
-      name: productName, // ✅ 상품명 반영
-      amount: parseInt(totalPrice, 10), // ✅ 금액 반영
+      name: productName,
+      amount: parseInt(totalPrice, 10),
       buyer_email: 'honggildong@example.com',
       buyer_name: '홍길동',
       buyer_tel: '01012345678',
@@ -57,7 +69,6 @@ export function initHomePage(): void {
       m_redirect_url: 'https://gurumauto.cafe24.com/'
     };
 
-    // 🧨 포트원 결제창 호출
     IMP.request_pay(paymentData, function (rsp: any) {
       const resultDiv = document.getElementById('payment-result');
       if (!resultDiv) return;
