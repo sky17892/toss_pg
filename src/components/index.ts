@@ -107,52 +107,47 @@ export function initHomePage(): void {
     });
   });
 
-const currentUrl = window.location.pathname;
-const hasSession = Boolean(sessionStorage.getItem('user_session'));
-const referrer = document.referrer;
-
-if (!hasSession || currentUrl !== 'https://gurumauto.cafe24.com/skin-skin2') {
-  alert('주문서가 없습니다. 주문서를 등록해주십시요!');
-  console.warn('세션 없음 또는 잘못된 경로 → 리디렉션 시작');
-
-  if (referrer === 'https://gurumauto.cafe24.com/') {
-    location.href = 'https://gurumauto.cafe24.com/';
-  }
-
-  return;
-}else{
-
-alert('kg이니시스 결제 가능합니다!');   
-//const productName = productEl?.textContent?.trim() || '상품명 없음';
-const popupScript = document.createElement('script');
-popupScript.innerHTML = `
-  window.addEventListener('load', () => {d
-    const productEl = document.querySelector('.prdName .ec-product-name');
-    const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
-
-    const quantity = Array.from(document.querySelectorAll('.description li'))
-      .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
-
-    const totalPriceElement = '80000원';
-    const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
-
-    if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
-      alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
-      console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
-      return;
-    }
-
-    const payload = {
-      type: 'orderInfo',
-      productName: \`\${productName} 외 \${quantity}개\`,
-      totalPrice
-    };
-
-    window.opener?.postMessage(payload, '*');
-    window.parent?.postMessage(payload, '*');
-  });
-`;
-document.body.appendChild(popupScript);
-return;
-}  
+  const currentUrl = window.location.href;
+  
+  // 현재 페이지가 메인 페이지인지 확인
+  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com';
+  
+  if (!isMainPage) {
+    // 메인 페이지가 아니면 toss-pg.vercel.app로 이동
+    alert('kg이니시스 결제 가능합니다!');  
+    const popupScript = document.createElement('script');
+    popupScript.innerHTML = `
+      window.addEventListener('load', () => {d
+        const productEl = document.querySelector('.prdName .ec-product-name');
+        const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
+    
+        const quantity = Array.from(document.querySelectorAll('.description li'))
+          .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
+    
+        const totalPriceElement = '80000원';
+        const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
+    
+        if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
+          alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+          console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+          return;
+        }
+    
+        const payload = {
+          type: 'orderInfo',
+          productName: \`\${productName} 외 \${quantity}개\`,
+          totalPrice
+        };
+    
+        window.opener?.postMessage(payload, '*');
+        window.parent?.postMessage(payload, '*');
+      });
+    `;
+    document.body.appendChild(popupScript);
+  } else {
+    alert('주문서가 없습니다. 주문서를 등록해주십시요!');
+    console.log('✅ 메인 페이지에 접속됨: gurumauto.cafe24.com');
+    // 추가적인 동작이 필요하면 여기에 작성
+  location.href = 'https://gurumauto.cafe24.com/';
 }
+}  
