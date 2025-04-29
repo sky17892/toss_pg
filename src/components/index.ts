@@ -106,22 +106,16 @@ export function initHomePage(): void {
   });
 
   const currentUrl = window.location.href;
-  const hasSession = Boolean(sessionStorage.getItem('user_session'));
+  //const hasSession = Boolean(sessionStorage.getItem('user_session'));
 
   const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
   const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
   const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html');
 
-  if (!hasSession) {
-    alert('주문서가 없습니다. 주문서를 등록해주십시요!');
-    location.href = 'https://gurumauto.cafe24.com/';
-    return;
-  }
-
   if (isOrderFormPage) {
     alert('kg이니시스 결제 가능합니다!');
     console.log('✅ 허용된 경로입니다.');
-  } else if (isMainPage || isSkinPage) {  
+  } else if (!isMainPage || !isSkinPage) {  
     alert('kg이니시스 결제 가능합니다!');
     console.log('✅ 허용된 경로입니다.');
   } else {
