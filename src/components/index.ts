@@ -115,9 +115,9 @@ export function initHomePage(): void {
   if (isOrderFormPage) {
     alert('kg이니시스 결제 가능합니다!');
     console.log('✅ 허용된 경로입니다.');
-  } else if (!isMainPage || !isSkinPage) {  
-    alert('kg이니시스 결제 가능합니다!');
-    console.log('✅ 허용된 경로입니다.');
+  } else if (isMainPage || isSkinPage) {  
+    alert('주문서가 없습니다. 주문서를 등록해주십시요!');
+    location.href = 'https://gurumauto.cafe24.com/';
   } else {
     alert('잘못된 접근입니다. 홈으로 이동합니다.');
     location.href = 'https://gurumauto.cafe24.com/';
