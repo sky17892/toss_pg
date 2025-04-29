@@ -112,7 +112,13 @@ export function initHomePage(): void {
   const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
   const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html');
 
-   if (isOrderFormPage || isMainPage || isSkinPage) {  
+   if (!isOrderFormPage || isMainPage || isSkinPage) {  
+    alert('잘못된 접근입니다. 홈으로 이동합니다.');
+    location.href = 'https://gurumauto.cafe24.com/';    
+    
+  } else {
+    
+
     alert('kg이니시스 결제 가능합니다!');
     console.log('✅ 허용된 경로입니다.');
     const popupScript = document.createElement('script');
@@ -145,9 +151,6 @@ export function initHomePage(): void {
     `;
     document.body.appendChild(popupScript);
     return;
-  } else {
-    alert('잘못된 접근입니다. 홈으로 이동합니다.');
-    location.href = 'https://gurumauto.cafe24.com/';    
   }
 
     const popupScript = document.createElement('script');
