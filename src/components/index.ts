@@ -111,6 +111,7 @@ export function initHomePage(): void {
   const hasSession = Boolean(sessionStorage.getItem('user_session'));
 
   if (!hasSession || currentUrl !== 'https://gurumauto.cafe24.com/') {
+    alert('주문서가 없습니다. 주문서를 등록해주십시요!');
     console.warn('세션 없음 또는 잘못된 경로 → 홈으로 이동');
     location.href = 'https://gurumauto.cafe24.com/';
     return;
