@@ -36,11 +36,11 @@ export function initHomePage(): void {
 
     const { productName, totalPrice } = event.data;
 
-    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
+   /* if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
       location.href = 'https://toss-pg.vercel.app/';  // 다른 URL로 변경 가능
       return;
-    }
+    }*/
 
     const orderId = `ORDER-${Date.now()}`;
     const paymentData: IamportPaymentOptions = {
@@ -107,33 +107,33 @@ export function initHomePage(): void {
     });
   });
 
-  //const currentPath = window.location.pathname;
-  const currentUrl = window.location.href;
-  const hasSession = Boolean(sessionStorage.getItem('user_session'));
-  
-  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
-  const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
-  const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html');
-  
-  if (!hasSession) {
-    alert('주문서가 없습니다. 주문서를 등록해주십시요!');
-    location.href = 'https://gurumauto.cafe24.com/';
-    return;
-  }
-  
-  if (isOrderFormPage) {
-    alert('kg이니시스 결제 가능합니다!');
-    return;
-  }
-  
-  if (isMainPage || isSkinPage) {
-    console.log('✅ 허용된 경로입니다.');
-    alert('kg이니시스 결제 가능합니다!');
-  } else {
-    alert('잘못된 접근입니다. 홈으로 이동합니다.');
-    location.href = 'https://gurumauto.cafe24.com/';
-  }
-  
+  const currentPath = window.location.pathname;
+const currentUrl = window.location.href;
+const hasSession = Boolean(sessionStorage.getItem('user_session'));
+
+const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
+const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
+const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html');
+
+if (!hasSession) {
+  alert('주문서가 없습니다. 주문서를 등록해주십시요!');
+  location.href = 'https://gurumauto.cafe24.com/';
+  return;
+}
+
+if (isOrderFormPage) {
+  location.href = 'https://toss-pg.vercel.app/';
+  return;
+}
+
+if (isMainPage || isSkinPage) {
+  console.log('✅ 허용된 경로입니다.');
+  alert('kg이니시스 결제 가능합니다!');
+} else {
+  alert('잘못된 접근입니다. 홈으로 이동합니다.');
+  location.href = 'https://gurumauto.cafe24.com/';
+}
+
   //const productName = productEl?.textContent?.trim() || '상품명 없음';
   const popupScript = document.createElement('script');
   popupScript.innerHTML = `
