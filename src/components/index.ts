@@ -105,21 +105,25 @@ export function initHomePage(): void {
     });
   });
 
-  // ✅ 현재 페이지 URL 조건에 따라 행동
   const currentUrl = window.location.href;
-  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
-  const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
+const referrer = document.referrer;
+const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
 
-  if (isMainPage) {
-    alert('kg이니시스 결제를 위해 결제 페이지로 이동합니다.');
-    location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
-    return;
-  }
+// 1. orderform 페이지가 아닐 경우 강제 이동
+if (!isOrderFormPage) {
+  alert('결제는 주문서 페이지에서만 가능합니다.');
+  location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
+  return;
+}
 
-  else if (!isMainPage && !isOrderFormPage) {
-    console.log('orderform 페이지에서만 popupScript 실행');
-
-    const popupScript = document.createElement('script');
+// 2. referrer가 메인페이지면 차단
+if (referrer === 'https://gurumauto.cafe24.com/') {
+  alert('잘못된 접근입니다. 홈으로 이동합니다.');
+  location.href = 'https://gurumauto.cafe24.com/';
+  return;
+  } else {
+    console.log('orderform 페이지가 아니므로 popupScript는 실행되지 않습니다.');
+     const popupScript = document.createElement('script');
     popupScript.innerHTML = `
       window.addEventListener('load', () => {
         const productEl = document.querySelector('.prdName .ec-product-name');
@@ -148,10 +152,5 @@ export function initHomePage(): void {
       });
     `;
     document.body.appendChild(popupScript);
-    return;
-  } else {
-    console.log('orderform 페이지가 아니므로 popupScript는 실행되지 않습니다.');
-    alert('kg이니시스 결제를 위해 결제 페이지로 이동합니다.');
-    location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
   }
 }
