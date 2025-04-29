@@ -115,6 +115,9 @@ export function initHomePage(): void {
     console.warn('잘못된 접근입니다. 주문서 페이지가 아닙니다.');
     location.href = 'https://gurumauto.cafe24.com/';
     return;
+  }else{
+    alert('kg이니시스 결제가 가능합니다.');
+    location.href = 'https://toss-pg.vercel.app/';
   }
 
   //const productName = productEl?.textContent?.trim() || '상품명 없음';
