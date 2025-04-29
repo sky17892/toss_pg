@@ -110,11 +110,11 @@ export function initHomePage(): void {
 
   const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
   const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
-  const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html');
+  const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
 
    if (!isOrderFormPage || isMainPage || isSkinPage) {  
     alert('kg이니시스 결제 가능합니다!');
-    location.href = 'https://gurumauto.cafe24.com/order/orderform.html';    
+    location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';    
     
   }
   
