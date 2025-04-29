@@ -107,46 +107,52 @@ export function initHomePage(): void {
     });
   });
 
-  const currentUrl = window.location.href;
-  const hasSession = Boolean(sessionStorage.getItem('user_session'));
+const currentUrl = window.location.pathname;
+const hasSession = Boolean(sessionStorage.getItem('user_session'));
+const referrer = document.referrer;
 
-  if (!hasSession || currentUrl !== 'https://gurumauto.cafe24.com/') {
-    alert('주문서가 없습니다. 주문서를 등록해주십시요!');
-    console.warn('세션 없음 또는 잘못된 경로 → 홈으로 이동');
+if (!hasSession || currentUrl !== 'https://gurumauto.cafe24.com/skin-skin2') {
+  alert('주문서가 없습니다. 주문서를 등록해주십시요!');
+  console.warn('세션 없음 또는 잘못된 경로 → 리디렉션 시작');
+
+  if (referrer === 'https://gurumauto.cafe24.com/') {
     location.href = 'https://gurumauto.cafe24.com/';
-    return;
   }
 
-  alert('kg이니시스 결제 가능합니다!');
+  return;
+}else{
 
-  //const productName = productEl?.textContent?.trim() || '상품명 없음';
-  const popupScript = document.createElement('script');
-  popupScript.innerHTML = `
-    window.addEventListener('load', () => {d
-      const productEl = document.querySelector('.prdName .ec-product-name');
-      const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
+alert('kg이니시스 결제 가능합니다!');   
+//const productName = productEl?.textContent?.trim() || '상품명 없음';
+const popupScript = document.createElement('script');
+popupScript.innerHTML = `
+  window.addEventListener('load', () => {d
+    const productEl = document.querySelector('.prdName .ec-product-name');
+    const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
 
-      const quantity = Array.from(document.querySelectorAll('.description li'))
-        .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
+    const quantity = Array.from(document.querySelectorAll('.description li'))
+      .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
 
-      const totalPriceElement = '80000원';
-      const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
+    const totalPriceElement = '80000원';
+    const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
 
-      if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
-        alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
-        console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
-        return;
-      }
+    if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
+      alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+      console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+      return;
+    }
 
-      const payload = {
-        type: 'orderInfo',
-        productName: \`\${productName} 외 \${quantity}개\`,
-        totalPrice
-      };
+    const payload = {
+      type: 'orderInfo',
+      productName: \`\${productName} 외 \${quantity}개\`,
+      totalPrice
+    };
 
-      window.opener?.postMessage(payload, '*');
-      window.parent?.postMessage(payload, '*');
-    });
-  `;
-  document.body.appendChild(popupScript);
+    window.opener?.postMessage(payload, '*');
+    window.parent?.postMessage(payload, '*');
+  });
+`;
+document.body.appendChild(popupScript);
+return;
+}  
 }
