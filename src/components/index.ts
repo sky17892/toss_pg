@@ -15,7 +15,6 @@ export function initHomePage(): void {
   home.innerHTML = ListItemPage();
   home.classList.remove('hidden');
 
-  // 포트원 SDK 확인
   if (!window.IMP) {
     console.error('포트원 SDK가 로드되지 않았습니다.');
     return;
@@ -36,19 +35,19 @@ export function initHomePage(): void {
 
     const { productName, totalPrice } = event.data;
 
-    /*if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
+    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
-      location.href = 'https://gurumauto.cafe24.com/';  // 다른 URL로 변경 가능
+      location.href = 'https://toss-pg.vercel.app/';
       return;
-    }*/
+    }
 
     const orderId = `ORDER-${Date.now()}`;
     const paymentData: IamportPaymentOptions = {
       pg: 'html5_inicis',
       pay_method: 'card',
       merchant_uid: orderId,
-      name: productName, // ✅ 상품명 반영
-      amount: parseInt(totalPrice, 10), // ✅ 금액 반영
+      name: productName,
+      amount: parseInt(totalPrice, 10),
       buyer_email: 'honggildong@example.com',
       buyer_name: '홍길동',
       buyer_tel: '01012345678',
@@ -57,7 +56,6 @@ export function initHomePage(): void {
       m_redirect_url: 'https://gurumauto.cafe24.com/'
     };
 
-    // 🧨 포트원 결제창 호출
     IMP.request_pay(paymentData, function (rsp: any) {
       const resultDiv = document.getElementById('payment-result');
       if (!resultDiv) return;
@@ -107,28 +105,52 @@ export function initHomePage(): void {
     });
   });
 
-  // Cafe24 페이지가 팝업으로 열릴 때 주문 정보를 전송하도록 로드 이벤트 처리
-  const popupScript = document.createElement('script');
-  popupScript.innerHTML = `
-    window.addEventListener('load', () => {
-      const productEl = document.querySelector('.prdName .ec-product-name');
-      const productName = productEl?.textContent?.trim() || '상품명 없음';
+  const currentUrl = window.location.href;
+  //const hasSession = Boolean(sessionStorage.getItem('user_session'));
 
-      const quantity = Array.from(document.querySelectorAll('.description li'))
-        .find(li => li.textContent.includes('수량'))?.textContent.match(/\d+/)?.[0] || '1';
+  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
+  const isSkinPage = currentUrl === 'https://gurumauto.cafe24.com/skin-skin2';
+  const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
 
-      const totalPriceElement = '80000원';
-      const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
+  const alreadyRedirected = sessionStorage.getItem('alreadyRedirected');
 
-      const payload = {
-        type: 'orderInfo',
-        productName: \`\${productName} 외 \${quantity}개\`,
-        totalPrice
-      };
-
-      window.opener?.postMessage(payload, '*');
-      window.parent?.postMessage(payload, '*');
-    });
-  `;
-  document.body.appendChild(popupScript);
-}
+  if (!isOrderFormPage && (isMainPage || isSkinPage)) {
+   if (!alreadyRedirected) {
+      alert('kg이니시스 결제 가능합니다! 실제 결제는 orderform 페이지에서 진행됩니다.');
+      sessionStorage.setItem('alreadyRedirected', 'true');
+      location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
+      return;
+    }
+  }  
+  
+    // ✅ 이동된 이후엔 popupScript만 실행
+    const popupScript = document.createElement('script');
+    popupScript.innerHTML = `
+      window.addEventListener('load', () => {
+        const productEl = document.querySelector('.prdName .ec-product-name');
+        const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
+  
+        const quantity = Array.from(document.querySelectorAll('.description li'))
+          .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
+  
+        const totalPriceElement = '80000원';
+        const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
+  
+        if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
+          alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+          console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
+          return;
+        }
+  
+        const payload = {
+          type: 'orderInfo',
+          productName: \`\${productName} 외 \${quantity}개\`,
+          totalPrice
+        };
+  
+        window.opener?.postMessage(payload, '*');
+        window.parent?.postMessage(payload, '*');
+      });
+    `;
+    document.body.appendChild(popupScript);
+  }
