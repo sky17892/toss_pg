@@ -107,30 +107,50 @@ export function initHomePage(): void {
     });
   });
 
-  // Cafe24 페이지가 팝업으로 열릴 때 주문 정보를 전송하도록 로드 이벤트 처리
+  const validReferrerPrefix = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
+  const referrer = document.referrer;
+
+  if (!referrer.startsWith(validReferrerPrefix)) {
+    console.warn('잘못된 접근입니다. 주문서 페이지가 아닙니다.');
+    location.href = 'https://gurumauto.cafe24.com/';
+    return;
+  }
+
   //const productName = productEl?.textContent?.trim() || '상품명 없음';
   const popupScript = document.createElement('script');
-  popupScript.innerHTML = `
-    window.addEventListener('load', () => {
-      const productEl = document.querySelector('.prdName .ec-product-name');
-      const popupScript = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜';    
-      const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';     
+popupScript.innerHTML = `
+  window.addEventListener('load', () => {
+    const validReferrerPrefix = 'https://gurumauto.cafe24.com/';
+    const referrer = document.referrer;
 
-      const quantity = Array.from(document.querySelectorAll('.description li'))
-        .find(li => li.textContent.includes('수량'))?.textContent.match(/\d+/)?.[0] || '1';
+    if (!referrer.startsWith(validReferrerPrefix)) {
+      console.warn('잘못된 접근입니다. 주문서 페이지가 아닙니다.');
+      return;
+    }
 
-      const totalPriceElement = '80000원';
-      const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
+    const productEl = document.querySelector('.prdName .ec-product-name');
+    const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
 
-      const payload = {
-        type: 'orderInfo',
-        productName: \`\${productName} 외 \${quantity}개\`,
-        totalPrice
-      };
+    const quantity = Array.from(document.querySelectorAll('.description li'))
+      .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
 
-      window.opener?.postMessage(payload, '*');
-      window.parent?.postMessage(payload, '*');
-    });
-  `;
-  document.body.appendChild(popupScript);
+    const totalPriceElement = '80000원';
+    const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
+
+    if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0 || !referrer.startsWith(validReferrerPrefix) {
+      console.warn('상품 정보가 부족하거나 금액이 잘못되었거나 잘못된 접근입니다. 주문서 페이지가 아닙니다..');
+      return;
+    }
+
+    const payload = {
+      type: 'orderInfo',
+      productName: \`\${productName} 외 \${quantity}개\`,
+      totalPrice
+    };
+
+    window.opener?.postMessage(payload, '*');
+    window.parent?.postMessage(payload, '*');
+  });
+`;
+document.body.appendChild(popupScript);
 }
