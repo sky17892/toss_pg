@@ -114,11 +114,10 @@ if (currentUrl === 'https://gurumauto.cafe24.com/') {
   // 정확히 gurumauto.cafe24.com/일 경우는 그대로 유지
   console.log('✅ Current page is the home page: gurumauto.cafe24.com/');
   alert('주문서가 없습니다. 주문서를 작성해주세요!');
-} else {
-  // 나머지 모든 경로는 Toss PG로 리디렉션
-  location.href = 'https://toss-pg.vercel.app/';
+  return;
+} 
   alert('kg이니시스 결제 가능합니다!');
-}
+
   //const productName = productEl?.textContent?.trim() || '상품명 없음';
   const popupScript = document.createElement('script');
   popupScript.innerHTML = `
