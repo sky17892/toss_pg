@@ -15,47 +15,33 @@ export function initHomePage(): void {
   home.innerHTML = ListItemPage();
   home.classList.remove('hidden');
 
-  const iframe = document.createElement('iframe');
-  //iframe.src = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
-  iframe.src = 'https://gurumauto.cafe24.com/order/orderform.html';
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
+  if (!window.IMP) {
+    console.error('포트원 SDK가 로드되지 않았습니다.');
+    return;
+  }
 
+  const IMP = window.IMP;
+  const IMP_USER_CODE = import.meta.env.VITE_IMP_USER_CODE;
+
+  if (IMP_USER_CODE) {
+    IMP.init(IMP_USER_CODE);
+  } else {
+    console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
+  }
+
+  // 💡 Cafe24 페이지로부터 상품 정보 받기
   window.addEventListener('message', (event) => {
-    // 보안상 origin 체크하는게 좋음
     if (!event.data || event.data.type !== 'orderInfo') return;
-  
+
     const { productName, totalPrice } = event.data;
-  
-    // 가격 유효성 검증
-    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
-      console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
-      location.href = 'https://gurumauto.cafe24.com/';  // 원하는 다른 URL로 변경 가능
-      return;
-    }
-  
-    if (!window.IMP) {
-      console.error('포트원 SDK가 로드되지 않았습니다.');
-      return;
-    }
-  
-    const IMP = window.IMP;
-    const IMP_USER_CODE = import.meta.env.VITE_IMP_USER_CODE;
-  
-    if (IMP_USER_CODE) {
-      IMP.init(IMP_USER_CODE);
-    } else {
-      console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
-      return;
-    }
-  
+
     const orderId = `ORDER-${Date.now()}`;
     const paymentData: IamportPaymentOptions = {
       pg: 'html5_inicis',
       pay_method: 'card',
       merchant_uid: orderId,
-      name: productName,
-      amount: parseInt(totalPrice, 10),
+      name: productName, // ✅ 상품명 반영
+      amount: parseInt(totalPrice, 10), // ✅ 금액 반영
       buyer_email: 'honggildong@example.com',
       buyer_name: '홍길동',
       buyer_tel: '010-1234-5678',
@@ -63,14 +49,15 @@ export function initHomePage(): void {
       buyer_postcode: '06130',
       m_redirect_url: 'https://gurumauto.cafe24.com/'
     };
-  
+
+    // 🧨 포트원 결제창 호출
     IMP.request_pay(paymentData, function (rsp: any) {
       const resultDiv = document.getElementById('payment-result');
       if (!resultDiv) return;
-  
+
       if (rsp.success) {
         console.log("결제 성공:", rsp);
-  
+
         fetch('/', {
           method: 'POST',
           headers: {
@@ -111,5 +98,5 @@ export function initHomePage(): void {
         `;
       }
     });
-  });  
+  });
 }
