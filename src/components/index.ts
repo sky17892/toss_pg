@@ -36,11 +36,11 @@ export function initHomePage(): void {
 
     const { productName, totalPrice } = event.data;
 
-   /* if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
+    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
       location.href = 'https://toss-pg.vercel.app/';  // 다른 URL로 변경 가능
       return;
-    }*/
+    }
 
     const orderId = `ORDER-${Date.now()}`;
     const paymentData: IamportPaymentOptions = {
@@ -122,7 +122,8 @@ if (!hasSession) {
 }
 
 if (isOrderFormPage) {
-  location.href = 'https://toss-pg.vercel.app/';
+  console.log('✅ 허용된 경로입니다.');
+  alert('kg이니시스 결제 가능합니다!');
   return;
 }
 
