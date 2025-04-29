@@ -113,7 +113,7 @@ export function initHomePage(): void {
   const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
 
    if (!isOrderFormPage || isMainPage || isSkinPage) {  
-    alert('kg이니시스 결제 가능합니다! https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A 페이지로 이동해야합니다!');
+    alert('kg이니시스 결제 가능합니다! 실제 결제는 https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A 페이지로 이동해야합니다!');
     //location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';    
     
   }
