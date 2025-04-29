@@ -29,7 +29,7 @@ export function initHomePage(): void {
     console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
   }
 
-  // 💡 Cafe24 페이지로부터 상품 정보 받기
+  // ✅ Cafe24 페이지에서 상품 정보를 받아 결제 실행
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
@@ -105,50 +105,52 @@ export function initHomePage(): void {
     });
   });
 
+  // ✅ 현재 페이지 URL 조건에 따라 행동
   const currentUrl = window.location.href;
-const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
-const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
+  const isMainPage = currentUrl === 'https://gurumauto.cafe24.com/';
+  const isOrderFormPage = currentUrl.startsWith('https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A');
 
-if (isMainPage) {
-  // 메인 페이지일 경우에만 강제 리다이렉트
-  alert('kg이니시스 결제를 위해 결제 페이지로 이동합니다.');
-  location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
-  return;
-}
+  if (isMainPage) {
+    alert('kg이니시스 결제를 위해 결제 페이지로 이동합니다.');
+    location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
+    return;
+  }
 
-if (isOrderFormPage) {
-  // 메인도 아니고, 결제 페이지도 아니라면 실행하지 않음
-  console.log('kg이니시스 결제를 위해 결제 페이지로 이동합니다.');  
-}
-  
-    // ✅ 이동된 이후엔 popupScript만 실행
+  if (isOrderFormPage) {
+    console.log('orderform 페이지에서만 popupScript 실행');
+
     const popupScript = document.createElement('script');
     popupScript.innerHTML = `
       window.addEventListener('load', () => {
         const productEl = document.querySelector('.prdName .ec-product-name');
         const productName = 'F1 자수와펜 FORMULA ONE TEAM BENZ AMG Wappen 벤츠 자수 와펜' || '상품명 없음';
-  
+
         const quantity = Array.from(document.querySelectorAll('.description li'))
           .find(li => li.textContent.includes('수량'))?.textContent.match(/\\d+/)?.[0] || '1';
-  
+
         const totalPriceElement = '80000원';
         const totalPrice = totalPriceElement.replace(/[^0-9]/g, '') || '0';
-  
+
         if (!productName || !totalPrice || parseInt(totalPrice, 10) <= 0) {
           alert('상품 정보가 부족하거나 금액이 잘못되었습니다.');
           console.warn('상품 정보가 부족하거나 금액이 잘못되었습니다.');
           return;
         }
-  
+
         const payload = {
           type: 'orderInfo',
           productName: \`\${productName} 외 \${quantity}개\`,
           totalPrice
         };
-  
+
         window.opener?.postMessage(payload, '*');
         window.parent?.postMessage(payload, '*');
       });
     `;
     document.body.appendChild(popupScript);
+  } else {
+    console.log('orderform 페이지가 아니므로 popupScript는 실행되지 않습니다.');
+    alert('kg이니시스 결제를 위해 결제 페이지로 이동합니다.');
+    location.href = 'https://gurumauto.cafe24.com/order/orderform.html?basket_type=A0000&delvtype=A';
   }
+}
