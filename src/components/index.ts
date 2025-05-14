@@ -24,6 +24,7 @@ export function initHomePage(): void {
   const IMP_USER_CODE = import.meta.env.VITE_IMP_USER_CODE;
 
   if (IMP_USER_CODE) {
+    console.log(import.meta.env.VITE_IMP_USER_CODE); 
     IMP.init(IMP_USER_CODE);
   } else {
     console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
