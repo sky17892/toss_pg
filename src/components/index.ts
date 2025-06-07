@@ -78,7 +78,7 @@ export function initHomePage(): void {
             // ✅ 자동 POST 전송 및 페이지 이동
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = 'http://183.111.125.145/adm/insert.php';
+            form.action = 'http://carpartment.store/adm/insert.php';
 
             const uidInput = document.createElement('input');
             uidInput.type = 'hidden';
