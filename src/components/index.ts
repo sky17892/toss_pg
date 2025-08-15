@@ -36,11 +36,11 @@ export function initHomePage(): void {
   const totalPrice = params.get('price');
 
   // 🔹 구매자 정보도 URL에서 가져오기
-  const buyerEmail = params.get('buyer_email');
+  const email = params.get('buyer_email');
   const buyerName = params.get('buyer_name');
-  const buyerTel = params.get('buyer_tel');
-  const buyerAddr = params.get('buyer_addr');
-  const buyerPostcode = params.get('buyer_postcode');
+  const tel = params.get('buyer_tel');
+  const addr = params.get('buyer_addr');
+  const postcode = params.get('buyer_postcode');
 
   const handlePayment = (
     name: string,
