@@ -35,6 +35,17 @@ export function initHomePage(): void {
   const productName = params.get('product');
   const totalPrice = params.get('price');
 
+  // ✅ 추가된 주문자 정보
+  const buyerName = params.get('name') || '구매자';
+  const buyerAddr = params.get('raddr1') || '';
+  const buyerPhone = [
+    params.get('rphone2_1') || '',
+    params.get('rphone2_2') || '',
+    params.get('rphone2_3') || '',
+  ].join('-');
+  const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
+  const buyerPostcode = params.get('rzipcode1') || '';
+
   const handlePayment = (name: string, price: string | number) => {
     const orderId = `ORDER-${Date.now()}`;
 
@@ -43,12 +54,12 @@ export function initHomePage(): void {
       pay_method: 'card',
       merchant_uid: orderId,
       name,
-      amount: parseInt(String(price), 10) * 1000,
-      buyer_email: 'honggildong@example.com',
-      buyer_name: '홍길동',
-      buyer_tel: '01012345678',
-      buyer_addr: '서울특별시 강남구 테헤란로 123',
-      buyer_postcode: '06130',
+      amount: parseInt(String(price), 10),
+      buyer_email: buyerEmail,
+      buyer_name: buyerName,
+      buyer_tel: buyerPhone,
+      buyer_addr: buyerAddr,
+      buyer_postcode: buyerPostcode,
       m_redirect_url: 'https://gurumauto.cafe24.com/',
     };
 
@@ -128,7 +139,7 @@ export function initHomePage(): void {
   // ✅ 1. URL 파라미터 방식 처리
   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
     handlePayment(productName, totalPrice);
-    return; // 리스너 생략
+    return;
   }
 
   // ✅ 2. 메시지(postMessage) 방식도 여전히 지원
