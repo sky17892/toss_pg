@@ -146,6 +146,15 @@ export function initHomePage(): void {
 
   // ✅ 1. URL 파라미터 방식 처리
   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
+      console.log('✅ 주문 정보:', {
+    productName,
+    totalPrice,
+    buyerName,
+    buyerAddr,
+    buyerPhone,
+    buyerEmail,
+    buyerPostcode
+  });
     handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
     return;
   }
