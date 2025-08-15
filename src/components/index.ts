@@ -32,15 +32,15 @@ export function initHomePage(): void {
   }
 
   const params = new URLSearchParams(window.location.search);
-  const productName = params.get('product');
-  const totalPrice = params.get('price');
+  const productName = params.get('product') || '상품명 미입력';
+  const totalPrice = params.get('price') || '0';
 
-  // 🔹 구매자 정보도 URL에서 가져오기
-  const email = params.get('buyer_email');
-  const buyerName = params.get('buyer_name');
-  const tel = params.get('buyer_tel');
-  const addr = params.get('buyer_addr');
-  const postcode = params.get('buyer_postcode');
+  // ✅ 구매자 정보 URL에서 읽기 (없으면 기본값)
+  const buyerEmail = params.get('email') || 'test@example.com';
+  const buyerName = params.get('name') || '이름없음';
+  const buyerTel = params.get('tel') || '01000000000';
+  const buyerAddr = params.get('addr') || '주소없음';
+  const buyerPostcode = params.get('postcode') || '00000';
 
   const handlePayment = (
     name: string,
@@ -59,11 +59,11 @@ export function initHomePage(): void {
       merchant_uid: orderId,
       name,
       amount: parseInt(String(price), 10) * 1000,
-      buyer_email: 'honggildong@example.com', 
-      buyer_name: '홍길동', 
-      buyer_tel: '01012345678', 
-      buyer_addr: '서울특별시 강남구 테헤란로 123', 
-      buyer_postcode: '06130', 
+      buyer_email: email,
+      buyer_name: buyerName,
+      buyer_tel: tel,
+      buyer_addr: addr,
+      buyer_postcode: postcode,
       m_redirect_url: 'https://gurumauto.cafe24.com/',
     };
 
@@ -140,8 +140,8 @@ export function initHomePage(): void {
   };
 
   // ✅ URL 파라미터 방식
-if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) { 
-  handlePayment(productName, totalPrice);
+  if (!isNaN(parseInt(totalPrice, 10)) && parseInt(totalPrice, 10) > 0) {
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode);
     return;
   }
 
@@ -149,7 +149,7 @@ if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
-    const { productName, totalPrice } = event.data;
+    const { productName, totalPrice, email, name, tel, addr, postcode } = event.data;
 
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
@@ -157,6 +157,14 @@ if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
       return;
     }
 
-    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode);
+    handlePayment(
+      productName || '상품명 미입력',
+      totalPrice,
+      email || 'test@example.com',
+      name || '이름없음',
+      tel || '01000000000',
+      addr || '주소없음',
+      postcode || '00000'
+    );
   });
 }
