@@ -141,7 +141,7 @@ export function initHomePage(): void {
 
   // ✅ URL 파라미터 방식
   if (!isNaN(parseInt(totalPrice, 10)) && parseInt(totalPrice, 10) > 0) {
-    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode);
+    handlePayment(productName, totalPrice,  email, name, tel, addr, postcode);
     return;
   }
 
