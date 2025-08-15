@@ -31,26 +31,11 @@ export function initHomePage(): void {
     return;
   }
 
-  // ✅ URL 파라미터에서 상품 및 구매자 정보 추출
   const params = new URLSearchParams(window.location.search);
-  const productName = params.get('product') || '상품명 미입력';
-  const totalPrice = params.get('price') || '0';
-  const buyerEmail = params.get('email') || 'test@example.com';
-  const buyerName = params.get('name') || '이름없음';
-  const buyerTel = params.get('tel') || '01000000000';
-  const buyerAddr = params.get('addr') || '주소없음';
-  const buyerPostcode = params.get('postcode') || '00000';
+  const productName = params.get('product');
+  const totalPrice = params.get('price');
 
-  // ✅ 결제 처리 함수
-  const handlePayment = (
-    name: string,
-    price: string | number,
-    buyer_email: string,
-    buyer_name: string,
-    buyer_tel: string,
-    buyer_addr: string,
-    buyer_postcode: string
-  ) => {
+  const handlePayment = (name: string, price: string | number) => {
     const orderId = `ORDER-${Date.now()}`;
 
     const paymentData: IamportPaymentOptions = {
@@ -58,12 +43,12 @@ export function initHomePage(): void {
       pay_method: 'card',
       merchant_uid: orderId,
       name,
-      amount: parseInt(String(price), 10) * 1000, // 가격 변환
-      buyer_email,
-      buyer_name,
-      buyer_tel,
-      buyer_addr,
-      buyer_postcode,
+      amount: parseInt(String(price), 10) * 1000,
+      buyer_email: 'honggildong@example.com',
+      buyer_name: '홍길동',
+      buyer_tel: '01012345678',
+      buyer_addr: '서울특별시 강남구 테헤란로 123',
+      buyer_postcode: '06130',
       m_redirect_url: 'https://gurumauto.cafe24.com/',
     };
 
@@ -91,29 +76,28 @@ export function initHomePage(): void {
                 <p>결제 금액: ${rsp.paid_amount}원</p>
               `;
 
-              // ✅ POST로 전달할 form 생성
+              // ✅ 자동 POST 전송 및 페이지 이동
               const form = document.createElement('form');
               form.method = 'POST';
               form.action = 'http://carpartment.store/adm/insert.php';
 
-              const fields = {
-                imp_uid: rsp.imp_uid,
-                merchant_uid: rsp.merchant_uid,
-                paid_amount: rsp.paid_amount,
-                buyer_email,
-                buyer_name,
-                buyer_tel,
-                buyer_addr,
-                buyer_postcode
-              };
+              const uidInput = document.createElement('input');
+              uidInput.type = 'hidden';
+              uidInput.name = 'imp_uid';
+              uidInput.value = rsp.imp_uid;
+              form.appendChild(uidInput);
 
-              Object.entries(fields).forEach(([key, value]) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = String(value);
-                form.appendChild(input);
-              });
+              const orderInput = document.createElement('input');
+              orderInput.type = 'hidden';
+              orderInput.name = 'merchant_uid';
+              orderInput.value = rsp.merchant_uid;
+              form.appendChild(orderInput);
+
+              const amountInput = document.createElement('input');
+              amountInput.type = 'hidden';
+              amountInput.name = 'paid_amount';
+              amountInput.value = rsp.paid_amount;
+              form.appendChild(amountInput);
 
               document.body.appendChild(form);
               form.submit();
@@ -141,40 +125,24 @@ export function initHomePage(): void {
     });
   };
 
-  // ✅ URL 파라미터로 결제 시작
-  if (!isNaN(parseInt(totalPrice, 10)) && parseInt(totalPrice, 10) > 0) {
-    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode);
-    return;
+  // ✅ 1. URL 파라미터 방식 처리
+  if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
+    handlePayment(productName, totalPrice);
+    return; // 리스너 생략
   }
 
-  // ✅ postMessage 방식 결제
+  // ✅ 2. 메시지(postMessage) 방식도 여전히 지원
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
-    const {
-      productName: msgProductName,
-      totalPrice: msgTotalPrice,
-      buyerEmail: msgBuyerEmail,
-      buyerName: msgBuyerName,
-      buyerTel: msgBuyerTel,
-      buyerAddr: msgBuyerAddr,
-      buyerPostcode: msgBuyerPostcode
-    } = event.data;
+    const { productName, totalPrice } = event.data;
 
-    if (!msgTotalPrice || isNaN(parseInt(msgTotalPrice, 10)) || parseInt(msgTotalPrice, 10) <= 0) {
+    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
       location.href = 'https://toss-pg.vercel.app/';
       return;
     }
 
-    handlePayment(
-      msgProductName || '상품명 미입력',
-      msgTotalPrice,
-      msgBuyerEmail || 'test@example.com',
-      msgBuyerName || '이름없음',
-      msgBuyerTel || '01000000000',
-      msgBuyerAddr || '주소없음',
-      msgBuyerPostcode || '00000'
-    );
+    handlePayment(productName, totalPrice);
   });
 }
