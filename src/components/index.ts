@@ -46,7 +46,15 @@ export function initHomePage(): void {
   const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
   const buyerPostcode = params.get('rzipcode1') || '';
 
-  const handlePayment = (name: string, price: string | number) => {
+  const handlePayment = (
+    name: string,
+    price: string | number,
+    buyerEmail: string,
+    buyerName: string,
+    buyerPhone: string,
+    buyerAddr: string,
+    buyerPostcode: string
+  ) => {
     const orderId = `ORDER-${Date.now()}`;
 
     const paymentData: IamportPaymentOptions = {
@@ -137,7 +145,7 @@ export function initHomePage(): void {
   };
 
   // ✅ 1. URL 파라미터 방식 처리
-   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
+  if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
     handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
     return;
   }
