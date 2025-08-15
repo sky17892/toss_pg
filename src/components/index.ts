@@ -54,7 +54,7 @@ export function initHomePage(): void {
       pay_method: 'card',
       merchant_uid: orderId,
       name,
-      amount: parseInt(String(price), 10),
+      amount: parseInt(String(price), 10) * 1000,
       buyer_email: buyerEmail,
       buyer_name: buyerName,
       buyer_tel: buyerPhone,
