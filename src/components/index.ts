@@ -59,11 +59,11 @@ export function initHomePage(): void {
       merchant_uid: orderId,
       name,
       amount: parseInt(String(price), 10) * 1000,
-      buyer_email: email,
-      buyer_name: buyerName,
-      buyer_tel: tel,
-      buyer_addr: addr,
-      buyer_postcode: postcode,
+      buyer_email: 'honggildong@example.com', 
+      buyer_name: '홍길동', 
+      buyer_tel: '01012345678', 
+      buyer_addr: '서울특별시 강남구 테헤란로 123', 
+      buyer_postcode: '06130', 
       m_redirect_url: 'https://gurumauto.cafe24.com/',
     };
 
@@ -140,8 +140,8 @@ export function initHomePage(): void {
   };
 
   // ✅ URL 파라미터 방식
-  if (productName && totalPrice && buyerEmail && buyerName && buyerTel && buyerAddr && buyerPostcode) {
-    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode);
+if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) { 
+  handlePayment(productName, totalPrice);
     return;
   }
 
@@ -149,7 +149,7 @@ export function initHomePage(): void {
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
-    const { productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode } = event.data;
+    const { productName, totalPrice } = event.data;
 
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
