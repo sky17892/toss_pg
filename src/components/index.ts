@@ -45,7 +45,7 @@ export function initHomePage(): void {
       name,
       amount: parseInt(String(price), 10) * 1000,
       buyer_email: 'honggildong@example.com',
-      buyer_name: name,
+      buyer_name: '홍길동',
       buyer_tel: '01012345678',
       buyer_addr: '서울특별시 강남구 테헤란로 123',
       buyer_postcode: '06130',
