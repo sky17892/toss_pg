@@ -35,7 +35,22 @@ export function initHomePage(): void {
   const productName = params.get('product');
   const totalPrice = params.get('price');
 
-  const handlePayment = (name: string, price: string | number) => {
+  // 🔹 구매자 정보도 URL에서 가져오기
+  const buyerEmail = params.get('buyer_email');
+  const buyerName = params.get('buyer_name');
+  const buyerTel = params.get('buyer_tel');
+  const buyerAddr = params.get('buyer_addr');
+  const buyerPostcode = params.get('buyer_postcode');
+
+  const handlePayment = (
+    name: string,
+    price: string | number,
+    email: string,
+    buyerName: string,
+    tel: string,
+    addr: string,
+    postcode: string
+  ) => {
     const orderId = `ORDER-${Date.now()}`;
 
     const paymentData: IamportPaymentOptions = {
@@ -44,11 +59,11 @@ export function initHomePage(): void {
       merchant_uid: orderId,
       name,
       amount: parseInt(String(price), 10) * 1000,
-      buyer_email: 'honggildong@example.com',
-      buyer_name: '홍길동',
-      buyer_tel: '01012345678',
-      buyer_addr: '서울특별시 강남구 테헤란로 123',
-      buyer_postcode: '06130',
+      buyer_email: email,
+      buyer_name: buyerName,
+      buyer_tel: tel,
+      buyer_addr: addr,
+      buyer_postcode: postcode,
       m_redirect_url: 'https://gurumauto.cafe24.com/',
     };
 
@@ -76,7 +91,6 @@ export function initHomePage(): void {
                 <p>결제 금액: ${rsp.paid_amount}원</p>
               `;
 
-              // ✅ 자동 POST 전송 및 페이지 이동
               const form = document.createElement('form');
               form.method = 'POST';
               form.action = 'http://carpartment.store/adm/insert.php';
@@ -125,17 +139,17 @@ export function initHomePage(): void {
     });
   };
 
-  // ✅ 1. URL 파라미터 방식 처리
-  if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
-    handlePayment(productName, totalPrice);
-    return; // 리스너 생략
+  // ✅ URL 파라미터 방식
+  if (productName && totalPrice && buyerEmail && buyerName && buyerTel && buyerAddr && buyerPostcode) {
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode);
+    return;
   }
 
-  // ✅ 2. 메시지(postMessage) 방식도 여전히 지원
+  // ✅ postMessage 방식
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
-    const { productName, totalPrice } = event.data;
+    const { productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode } = event.data;
 
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
@@ -143,6 +157,6 @@ export function initHomePage(): void {
       return;
     }
 
-    handlePayment(productName, totalPrice);
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerTel, buyerAddr, buyerPostcode);
   });
 }
