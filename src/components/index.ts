@@ -137,8 +137,8 @@ export function initHomePage(): void {
   };
 
   // ✅ 1. URL 파라미터 방식 처리
-  if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
-    handlePayment(productName, totalPrice);
+   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
     return;
   }
 
@@ -146,7 +146,7 @@ export function initHomePage(): void {
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
-    const { productName, totalPrice } = event.data;
+    const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
 
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
@@ -154,6 +154,6 @@ export function initHomePage(): void {
       return;
     }
 
-    handlePayment(productName, totalPrice);
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
   });
 }
