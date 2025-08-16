@@ -24,7 +24,7 @@ export function initHomePage(): void {
   const IMP_USER_CODE = import.meta.env.VITE_IMP_USER_CODE;
 
   if (IMP_USER_CODE) {
-    console.log(import.meta.env.VITE_IMP_USER_CODE);
+    console.log(IMP_USER_CODE);
     IMP.init(IMP_USER_CODE);
   } else {
     console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
@@ -35,16 +35,12 @@ export function initHomePage(): void {
   const productName = params.get('product');
   const totalPrice = params.get('price');
 
-  // ✅ 추가된 주문자 정보
+  // ✅ 전 페이지에서 이미 전체 휴대폰과 이메일로 통일
   const buyerName = params.get('name') || '구매자';
   const buyerAddr = params.get('raddr1') || '';
-  const buyerPhone = [
-    params.get('rphone2_1') || '',
-    params.get('rphone2_2') || '',
-    params.get('rphone2_3') || '',
-  ].join('-');
-  const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
-  const buyerPostcode = params.get('rzipcode1') || '';
+  const buyerPhone = params.get('rphone') || ''; // 전체 휴대폰
+  const buyerEmail = params.get('email') || '';   // 전체 이메일
+  const buyerPostcode = params.get('rzipcode') || '';
 
   const handlePayment = (
     name: string,
@@ -95,7 +91,7 @@ export function initHomePage(): void {
                 <p>결제 금액: ${rsp.paid_amount}원</p>
               `;
 
-              // ✅ 자동 POST 전송 및 페이지 이동
+              // 자동 POST 전송 및 페이지 이동
               const form = document.createElement('form');
               form.method = 'POST';
               form.action = 'http://carpartment.store/adm/insert.php';
@@ -144,22 +140,22 @@ export function initHomePage(): void {
     });
   };
 
-  // ✅ 1. URL 파라미터 방식 처리
+  // URL 파라미터로 결제 처리
   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
-      console.log('✅ 주문 정보:', {
-    productName,
-    totalPrice,
-    buyerName,
-    buyerAddr,
-    buyerPhone,
-    buyerEmail,
-    buyerPostcode
-  });
+    console.log('✅ 주문 정보:', {
+      productName,
+      totalPrice,
+      buyerName,
+      buyerAddr,
+      buyerPhone,
+      buyerEmail,
+      buyerPostcode,
+    });
     handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
     return;
   }
 
-  // ✅ 2. 메시지(postMessage) 방식도 여전히 지원
+  // 메시지(postMessage) 방식
   window.addEventListener('message', (event) => {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
