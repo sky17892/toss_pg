@@ -24,7 +24,6 @@ export function initHomePage(): void {
   const IMP_USER_CODE = import.meta.env.VITE_IMP_USER_CODE;
 
   if (IMP_USER_CODE) {
-    console.log(IMP_USER_CODE);
     IMP.init(IMP_USER_CODE);
   } else {
     console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
@@ -35,15 +34,14 @@ export function initHomePage(): void {
   const productName = params.get('product');
   const totalPrice = params.get('price');
 
-  // ✅ 전 페이지에서 이미 전체 휴대폰과 이메일로 통일
-  const buyerName = params.get('name') || '구매자'; 
-  const buyerAddr = params.get('raddr1') || ''; 
-  const buyerPhone = [ 
-    params.get('rphone2_1') || '', 
-    params.get('rphone2_2') || '', 
-    .get('rphone2_3') || '',
-  ].join('-'); 
-  const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || ''); 
+  const buyerName = params.get('name') || '구매자';
+  const buyerAddr = params.get('raddr1') || '';
+  const buyerPhone = [
+    params.get('rphone2_1') || '',
+    params.get('rphone2_2') || '',
+    params.get('rphone2_3') || ''
+  ].join('-');
+  const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
   const buyerPostcode = params.get('rzipcode1') || '';
 
   const handlePayment = (
@@ -62,7 +60,7 @@ export function initHomePage(): void {
       pay_method: 'card',
       merchant_uid: orderId,
       name,
-      amount: parseInt(String(price), 10) * 1000,
+      amount: parseInt(String(price), 10) * 1000, // 금액은 원 단위
       buyer_email: buyerEmail,
       buyer_name: buyerName,
       buyer_tel: buyerPhone,
@@ -76,8 +74,6 @@ export function initHomePage(): void {
       if (!resultDiv) return;
 
       if (rsp.success) {
-        console.log('결제 성공:', rsp);
-
         fetch('/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -98,7 +94,7 @@ export function initHomePage(): void {
               // 자동 POST 전송 및 페이지 이동
               const form = document.createElement('form');
               form.method = 'POST';
-              form.action = 'http://carpartment.store/adm/insert.php';
+              form.action = 'https://carpartment.store/adm/insert.php';
 
               const uidInput = document.createElement('input');
               uidInput.type = 'hidden';
@@ -128,14 +124,12 @@ export function initHomePage(): void {
             }
           })
           .catch((error) => {
-            console.error('서버 통신 실패:', error);
             resultDiv.innerHTML = `
               <h2 class="error">❌ 서버 오류로 결제 검증 실패</h2>
               <p>${error}</p>
             `;
           });
       } else {
-        console.error('결제 실패:', rsp);
         resultDiv.innerHTML = `
           <h2 class="error">❌ 결제에 실패했습니다</h2>
           <p>실패 사유: ${rsp.error_msg}</p>
@@ -146,27 +140,19 @@ export function initHomePage(): void {
 
   // URL 파라미터로 결제 처리
   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
-    console.log('✅ 주문 정보:', {
-      productName,
-      totalPrice,
-      buyerName,
-      buyerAddr,
-      buyerPhone,
-      buyerEmail,
-      buyerPostcode,
-    });
     handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
     return;
   }
 
   // 메시지(postMessage) 방식
   window.addEventListener('message', (event) => {
+    // 보안 체크: 허용된 origin만 처리
+    if (event.origin !== 'https://허용된도메인') return;
     if (!event.data || event.data.type !== 'orderInfo') return;
 
     const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
 
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
-      console.warn('잘못된 주문 가격입니다. 홈으로 이동합니다.');
       location.href = 'https://toss-pg.vercel.app/';
       return;
     }
