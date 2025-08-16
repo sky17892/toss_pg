@@ -40,7 +40,7 @@ export function initHomePage(): void {
     params.get('rphone2_1') || '',
     params.get('rphone2_2') || '',
     params.get('rphone2_3') || ''
-  ].join('-');
+  ].join('');
   const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
   const buyerPostcode = params.get('rzipcode1') || '';
 
