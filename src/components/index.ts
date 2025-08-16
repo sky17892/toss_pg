@@ -44,8 +44,6 @@ export function initHomePage(): void {
   const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
   const buyerPostcode = params.get('rzipcode1') || '';
 
-  // URL 파라미터 확인 로그
-  console.log('[URL 파라미터 값]');
   console.log('productName:', productName);
   console.log('totalPrice:', totalPrice);
   console.log('buyerName:', buyerName);
