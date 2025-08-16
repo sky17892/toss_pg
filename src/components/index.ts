@@ -44,6 +44,16 @@ export function initHomePage(): void {
   const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
   const buyerPostcode = params.get('rzipcode1') || '';
 
+  // URL 파라미터 확인 로그
+  console.log('[URL 파라미터 값]');
+  console.log('productName:', productName);
+  console.log('totalPrice:', totalPrice);
+  console.log('buyerName:', buyerName);
+  console.log('buyerAddr:', buyerAddr);
+  console.log('buyerPhone:', buyerPhone);
+  console.log('buyerEmail:', buyerEmail);
+  console.log('buyerPostcode:', buyerPostcode);
+
   const handlePayment = (
     name: string,
     price: string | number,
@@ -60,7 +70,7 @@ export function initHomePage(): void {
       pay_method: 'card',
       merchant_uid: orderId,
       name,
-      amount: parseInt(String(price), 10) * 1000, // 금액은 원 단위
+      amount: parseInt(String(price), 10), // ⚠️ 금액 단위 확인 필요
       buyer_email: buyerEmail,
       buyer_name: buyerName,
       buyer_tel: buyerPhone,
@@ -69,11 +79,15 @@ export function initHomePage(): void {
       m_redirect_url: 'https://gurumauto.cafe24.com/',
     };
 
+    console.log('[결제 요청 데이터]', paymentData);
+
     IMP.request_pay(paymentData, function (rsp: any) {
       const resultDiv = document.getElementById('payment-result');
       if (!resultDiv) return;
 
       if (rsp.success) {
+        console.log('[결제 성공 응답]', rsp);
+
         fetch('/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -84,6 +98,8 @@ export function initHomePage(): void {
         })
           .then((response) => response.json())
           .then((data) => {
+            console.log('[서버 검증 응답]', data);
+
             if (data.success) {
               resultDiv.innerHTML = `
                 <h2 class="success">✅ 결제가 정상적으로 완료되었습니다.</h2>
@@ -124,12 +140,14 @@ export function initHomePage(): void {
             }
           })
           .catch((error) => {
+            console.error('[서버 오류]', error);
             resultDiv.innerHTML = `
               <h2 class="error">❌ 서버 오류로 결제 검증 실패</h2>
               <p>${error}</p>
             `;
           });
       } else {
+        console.error('[결제 실패 응답]', rsp);
         resultDiv.innerHTML = `
           <h2 class="error">❌ 결제에 실패했습니다</h2>
           <p>실패 사유: ${rsp.error_msg}</p>
@@ -151,6 +169,8 @@ export function initHomePage(): void {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
     const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
+
+    console.log('[postMessage 데이터]', event.data);
 
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       location.href = 'https://toss-pg.vercel.app/';
