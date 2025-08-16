@@ -36,11 +36,15 @@ export function initHomePage(): void {
   const totalPrice = params.get('price');
 
   // ✅ 전 페이지에서 이미 전체 휴대폰과 이메일로 통일
-  const buyerName = params.get('name') || '구매자';
-  const buyerAddr = params.get('raddr1') || '';
-  const buyerPhone = params.get('rphone') || ''; // 전체 휴대폰
-  const buyerEmail = params.get('email') || '';   // 전체 이메일
-  const buyerPostcode = params.get('rzipcode') || '';
+  const buyerName = params.get('name') || '구매자'; 
+  const buyerAddr = params.get('raddr1') || ''; 
+  const buyerPhone = [ 
+    params.get('rphone2_1') || '', 
+    params.get('rphone2_2') || '', 
+    .get('rphone2_3') || '',
+  ].join('-'); 
+  const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || ''); 
+  const buyerPostcode = params.get('rzipcode1') || '';
 
   const handlePayment = (
     name: string,
