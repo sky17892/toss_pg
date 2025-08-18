@@ -86,7 +86,7 @@ export function initHomePage(): void {
       if (rsp.success) {
         console.log('[결제 성공 응답]', rsp);
 
-        fetch('/api/process-payment', {
+        fetch('https://toss-pg.vercel.app/api/process-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
