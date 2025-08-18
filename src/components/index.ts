@@ -126,7 +126,7 @@ export function initHomePage(): void {
               // 자동 POST 전송 및 페이지 이동
               const form = document.createElement('form');
               form.method = 'POST';
-              form.action = 'https://carpartment.store/adm/insert.php';
+              form.action = 'https://gurumauto.cafe24.com/myshop/order/list.html';
 
               const uidInput = document.createElement('input');
               uidInput.type = 'hidden';
