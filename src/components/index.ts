@@ -68,7 +68,7 @@ export function initHomePage(): void {
       pay_method: 'card',
       merchant_uid: orderId,
       name,
-      amount: parseInt(String(price), 10), // ⚠️ 금액 단위 확인 필요
+      amount: parseInt(String(price), 10),
       buyer_email: buyerEmail,
       buyer_name: buyerName,
       buyer_tel: buyerPhone,
@@ -87,14 +87,32 @@ export function initHomePage(): void {
         console.log('[결제 성공 응답]', rsp);
 
         fetch('/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            imp_uid: rsp.imp_uid,
-            merchant_uid: rsp.merchant_uid,
-          }),
-        })
-          .then((response) => response.json())
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imp_uid: rsp.imp_uid,
+              merchant_uid: rsp.merchant_uid,
+            }),
+          })
+          .then((response) => {
+            // 서버 응답이 성공적인지 확인
+            if (!response.ok) {
+              throw new Error(`서버 응답 오류: ${response.status}`);
+            }
+
+            // 응답의 Content-Type 헤더를 확인
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              // Content-Type이 JSON일 경우, json() 메서드 사용
+              return response.json();
+            } else {
+              // Content-Type이 JSON이 아닐 경우, text() 메서드 사용 후 오류 처리
+              return response.text().then(text => {
+                console.error('서버가 JSON이 아닌 응답을 보냈습니다:', text);
+                throw new Error('서버 응답 형식이 올바르지 않습니다.');
+              });
+            }
+          })
           .then((data) => {
             console.log('[서버 검증 응답]', data);
 
@@ -141,7 +159,7 @@ export function initHomePage(): void {
             console.error('[서버 오류]', error);
             resultDiv.innerHTML = `
               <h2 class="error">❌ 서버 오류로 결제 검증 실패</h2>
-              <p>${error}</p>
+              <p>${error.message}</p>
             `;
           });
       } else {
@@ -163,7 +181,7 @@ export function initHomePage(): void {
   // 메시지(postMessage) 방식
   window.addEventListener('message', (event) => {
     // 보안 체크: 허용된 origin만 처리
-    if (event.origin !== 'https://허용된도메인') return;
+    if (event.origin !== 'https://gurumauto.cafe24.com') return;
     if (!event.data || event.data.type !== 'orderInfo') return;
 
     const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
