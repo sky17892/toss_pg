@@ -1,17 +1,11 @@
-// `process-payment.js`
 const axios = require('axios');
 
-// =========================================================================
-// !!! 중요 !!! 아래 변수들은 Vercel 환경 변수로 설정해야 합니다.
-// =========================================================================
 const IMP_API_KEY = process.env.IMP_API_KEY;
 const IMP_API_SECRET = process.env.IMP_API_SECRET;
 const CAFE24_ACCESS_TOKEN = process.env.CAFE24_ACCESS_TOKEN;
 const CAFE24_STORE_URL = process.env.CAFE24_STORE_URL;
-// =========================================================================
 
 module.exports = async (req, res) => {
-    // **[수정]** productNo와 variantCode를 req.body에서 추가로 받음
     const { imp_uid, merchant_uid, productName, totalPrice, buyerName, productNo, variantCode } = req.body;
 
     if (!imp_uid || !merchant_uid || !productNo || !variantCode) {
@@ -49,8 +43,8 @@ module.exports = async (req, res) => {
             "order": {
                 "member_id": "guest",
                 "items": [{
-                    "product_no": productNo,      // **[수정]** 클라이언트에서 받은 값 사용
-                    "variant_code": variantCode,  // **[수정]** 클라이언트에서 받은 값 사용
+                    "product_no": productNo,
+                    "variant_code": variantCode,
                     "quantity": 1
                 }],
                 "payment_method_code": "card",
