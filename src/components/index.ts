@@ -95,7 +95,7 @@ export function initHomePage(): void {
             }),
           })
           .then((response) => {
-            // 서버 응답이 성공적인지 확인
+            // 서버 응답이 성공적인지 확인 (HTTP 상태 코드 200-299)
             if (!response.ok) {
               throw new Error(`서버 응답 오류: ${response.status}`);
             }
@@ -180,8 +180,18 @@ export function initHomePage(): void {
 
   // 메시지(postMessage) 방식
   window.addEventListener('message', (event) => {
-    // 보안 체크: 허용된 origin만 처리
-    if (event.origin !== 'https://gurumauto.cafe24.com') return;
+    // 허용된 도메인 목록을 배열로 관리
+    const allowedOrigins = [
+      'https://gurumauto.cafe24.com',
+      'https://carpartment.store'
+    ];
+
+    // event.origin이 허용된 도메인 목록에 포함되어 있는지 확인
+    if (!allowedOrigins.includes(event.origin)) {
+      console.warn('허용되지 않은 도메인에서 온 메시지입니다.', event.origin);
+      return;
+    }
+
     if (!event.data || event.data.type !== 'orderInfo') return;
 
     const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
