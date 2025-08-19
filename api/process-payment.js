@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 const IMP_API_KEY = process.env.IMP_API_KEY;
 const IMP_API_SECRET = process.env.IMP_API_SECRET;
