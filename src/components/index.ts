@@ -92,26 +92,20 @@ export function initHomePage(): void {
             body: JSON.stringify({
               imp_uid: rsp.imp_uid,
               merchant_uid: rsp.merchant_uid,
+              totalPrice: rsp.paid_amount, // 실제 결제 금액을 서버로 전송
+              productName: rsp.name,
+              buyerName: rsp.buyer_name,
+              buyerPhone: rsp.buyer_tel,
+              buyerEmail: rsp.buyer_email,
+              buyerAddr: rsp.buyer_addr,
+              buyerPostcode: rsp.buyer_postcode,
             }),
           })
           .then((response) => {
-            // 서버 응답이 성공적인지 확인 (HTTP 상태 코드 200-299)
             if (!response.ok) {
               throw new Error(`서버 응답 오류: ${response.status}`);
             }
-
-            // 응답의 Content-Type 헤더를 확인
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-              // Content-Type이 JSON일 경우, json() 메서드 사용
-              return response.json();
-            } else {
-              // Content-Type이 JSON이 아닐 경우, text() 메서드 사용 후 오류 처리
-              return response.text().then(text => {
-                console.error('서버가 JSON이 아닌 응답을 보냈습니다:', text);
-                throw new Error('서버 응답 형식이 올바르지 않습니다.');
-              });
-            }
+            return response.json();
           })
           .then((data) => {
             console.log('[서버 검증 응답]', data);
@@ -121,33 +115,13 @@ export function initHomePage(): void {
                 <h2 class="success">✅ 결제가 정상적으로 완료되었습니다.</h2>
                 <p>주문번호: ${rsp.merchant_uid}</p>
                 <p>결제 금액: ${rsp.paid_amount}원</p>
+                <p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>
               `;
 
-              // 자동 POST 전송 및 페이지 이동
-              const form = document.createElement('form');
-              form.method = 'POST';
-              form.action = 'https://gurumauto.cafe24.com/myshop/order/list.html';
-
-              const uidInput = document.createElement('input');
-              uidInput.type = 'hidden';
-              uidInput.name = 'imp_uid';
-              uidInput.value = rsp.imp_uid;
-              form.appendChild(uidInput);
-
-              const orderInput = document.createElement('input');
-              orderInput.type = 'hidden';
-              orderInput.name = 'merchant_uid';
-              orderInput.value = rsp.merchant_uid;
-              form.appendChild(orderInput);
-
-              const amountInput = document.createElement('input');
-              amountInput.type = 'hidden';
-              amountInput.name = 'paid_amount';
-              amountInput.value = rsp.paid_amount;
-              form.appendChild(amountInput);
-
-              document.body.appendChild(form);
-              form.submit();
+              // 주문이 성공적으로 생성되었으므로, 3초 후 페이지 이동
+              setTimeout(() => {
+                window.location.href = 'https://gurumauto.cafe24.com/myshop/order/list.html';
+              }, 3000);
             } else {
               resultDiv.innerHTML = `
                 <h2 class="error">❌ 결제 검증 실패</h2>
@@ -172,21 +146,17 @@ export function initHomePage(): void {
     });
   };
 
-  // URL 파라미터로 결제 처리
   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
     handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
     return;
   }
 
-  // 메시지(postMessage) 방식
   window.addEventListener('message', (event) => {
-    // 허용된 도메인 목록을 배열로 관리
     const allowedOrigins = [
       'https://gurumauto.cafe24.com',
       'https://carpartment.store'
     ];
 
-    // event.origin이 허용된 도메인 목록에 포함되어 있는지 확인
     if (!allowedOrigins.includes(event.origin)) {
       console.warn('허용되지 않은 도메인에서 온 메시지입니다.', event.origin);
       return;
