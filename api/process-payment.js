@@ -54,7 +54,7 @@ module.exports = async (req, res) => {
             "order": {
                 "member_id": "guest",
                 "items": [{
-                    "product_no": paymentData.custom_data?.product_no || '기본 상품번호',
+                    "product_no": paymentData.custom_data?.merchant_uid || '기본 상품번호',
                     "variant_code": paymentData.custom_data?.variant_code || '기본 옵션코드',
                     "quantity": 1
                 }],
