@@ -8,7 +8,7 @@ const CAFE24_STORE_URL = process.env.CAFE24_STORE_URL;
 module.exports = async (req, res) => {
     const { imp_uid, merchant_uid, productName, totalPrice, buyerName, productNo, variantCode } = req.body;
 
-    if (!imp_uid || !merchant_uid || !productNo || !variantCode) {
+    if (!imp_uid || !merchant_uid) {
         return res.status(400).json({ success: false, message: '필수 정보 누락' });
     }
 
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
             "order": {
                 "member_id": "guest",
                 "items": [{
-                    "product_no": productNo,
+                    "product_no": merchant_uid,
                     "variant_code": variantCode,
                     "quantity": 1
                 }],
