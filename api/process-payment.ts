@@ -81,8 +81,6 @@ export default async (req: any, res: any) => {
             }
         };
 
-        console.log(`[${logTime}] 카페24 주문 페이로드 생성: ${JSON.stringify(cafe24OrderPayload)}`);
-
         const createCafe24Order = await axios({
             url: `https://${CAFE24_STORE_URL}/api/v2/admin/orders`,
             method: 'POST',
@@ -93,8 +91,14 @@ export default async (req: any, res: any) => {
             data: cafe24OrderPayload
         });
 
-        console.log(`[${logTime}] 카페24 주문 생성 성공: 주문번호=${createCafe24Order.data.order.order_id}`);
-        res.status(200).json({ success: true, message: '주문 처리가 완료되었습니다.' });
+        const orderId = createCafe24Order.data.order.order_id;
+        console.log(`[${logTime}] 카페24 주문 생성 성공: 주문번호=${orderId}`);
+        
+        res.status(200).json({ 
+            success: true, 
+            message: '주문 처리가 완료되었습니다.',
+            order_id: orderId // 생성된 주문번호를 응답에 포함
+        });
 
     } catch (error: any) {
         console.error(`[${logTime}] 주문 처리 중 오류 발생:`, error.response ? error.response.data : error.message);
