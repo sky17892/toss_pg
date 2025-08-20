@@ -59,7 +59,9 @@ export function initHomePage(): void {
     buyerName: string,
     buyerPhone: string,
     buyerAddr: string,
-    buyerPostcode: string
+    buyerPostcode: string,
+    productNo?: string | null,
+    variantCode?: string | null
   ) => {
     const orderId = `ORDER-${Date.now()}`;
     const redirectBaseUrl = 'https://gurumauto.cafe24.com/myshop/order/list.html';
@@ -76,6 +78,7 @@ export function initHomePage(): void {
       buyer_addr: buyerAddr,
       buyer_postcode: buyerPostcode,
       m_redirect_url: redirectBaseUrl,
+      custom_data: { product_no: productNo, variant_code: variantCode },
     };
 
     console.log('[결제 요청 데이터]', paymentData);
@@ -100,6 +103,8 @@ export function initHomePage(): void {
             buyerEmail: rsp.buyer_email,
             buyerAddr: rsp.buyer_addr,
             buyerPostcode: rsp.buyer_postcode,
+            productNo: paymentData.custom_data.product_no,
+            variantCode: paymentData.custom_data.variant_code,
           }),
         })
           .then((response) => {
