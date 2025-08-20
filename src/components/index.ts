@@ -33,6 +33,8 @@ export function initHomePage(): void {
   const params = new URLSearchParams(window.location.search);
   const productName = params.get('product');
   const totalPrice = params.get('price');
+  const productNo = params.get('productNo');
+  const variantCode = params.get('variantCode');
 
   const buyerName = params.get('name') || '구매자';
   const buyerAddr = params.get('raddr1') || '';
@@ -46,6 +48,8 @@ export function initHomePage(): void {
 
   console.log('productName:', productName);
   console.log('totalPrice:', totalPrice);
+  console.log('productNo:', productNo);
+  console.log('variantCode:', variantCode);
   console.log('buyerName:', buyerName);
   console.log('buyerAddr:', buyerAddr);
   console.log('buyerPhone:', buyerPhone);
@@ -59,7 +63,9 @@ export function initHomePage(): void {
     buyerName: string,
     buyerPhone: string,
     buyerAddr: string,
-    buyerPostcode: string
+    buyerPostcode: string,
+    productNo?: string | null,
+    variantCode?: string | null
   ) => {
     const orderId = `ORDER-${Date.now()}`;
 
@@ -74,7 +80,8 @@ export function initHomePage(): void {
       buyer_tel: buyerPhone,
       buyer_addr: buyerAddr,
       buyer_postcode: buyerPostcode,
-      m_redirect_url: 'https://gurumauto.cafe24.com/',
+      m_redirect_url: 'https://gurumauto.cafe24.com/myshop/order/list.html',
+      custom_data: { product_no: productNo, variant_code: variantCode },
     };
 
     console.log('[결제 요청 데이터]', paymentData);
@@ -92,7 +99,7 @@ export function initHomePage(): void {
             body: JSON.stringify({
               imp_uid: rsp.imp_uid,
               merchant_uid: rsp.merchant_uid,
-              totalPrice: rsp.paid_amount, // 실제 결제 금액을 서버로 전송
+              totalPrice: rsp.paid_amount,
               productName: rsp.name,
               buyerName: rsp.buyer_name,
               buyerPhone: rsp.buyer_tel,
@@ -118,7 +125,6 @@ export function initHomePage(): void {
                 <p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>
               `;
 
-              // 주문이 성공적으로 생성되었으므로, 3초 후 페이지 이동
               setTimeout(() => {
                 window.location.href = 'https://gurumauto.cafe24.com/myshop/order/list.html';
               }, 3000);
@@ -147,7 +153,7 @@ export function initHomePage(): void {
   };
 
   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
-    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode, productNo, variantCode);
     return;
   }
 
@@ -164,7 +170,7 @@ export function initHomePage(): void {
 
     if (!event.data || event.data.type !== 'orderInfo') return;
 
-    const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
+    const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode, productNo, variantCode } = event.data;
 
     console.log('[postMessage 데이터]', event.data);
 
@@ -173,6 +179,6 @@ export function initHomePage(): void {
       return;
     }
 
-    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode, productNo, variantCode);
   });
 }
