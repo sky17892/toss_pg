@@ -33,8 +33,6 @@ export function initHomePage(): void {
   const params = new URLSearchParams(window.location.search);
   const productName = params.get('product');
   const totalPrice = params.get('price');
-  const productNo = params.get('productNo');
-  const variantCode = params.get('variantCode');
 
   const buyerName = params.get('name') || '구매자';
   const buyerAddr = params.get('raddr1') || '';
@@ -48,8 +46,6 @@ export function initHomePage(): void {
 
   console.log('productName:', productName);
   console.log('totalPrice:', totalPrice);
-  console.log('productNo:', productNo);
-  console.log('variantCode:', variantCode);
   console.log('buyerName:', buyerName);
   console.log('buyerAddr:', buyerAddr);
   console.log('buyerPhone:', buyerPhone);
@@ -63,9 +59,7 @@ export function initHomePage(): void {
     buyerName: string,
     buyerPhone: string,
     buyerAddr: string,
-    buyerPostcode: string,
-    productNo?: string | null,
-    variantCode?: string | null
+    buyerPostcode: string
   ) => {
     const orderId = `ORDER-${Date.now()}`;
 
@@ -81,7 +75,6 @@ export function initHomePage(): void {
       buyer_addr: buyerAddr,
       buyer_postcode: buyerPostcode,
       m_redirect_url: 'https://gurumauto.cafe24.com/myshop/order/list.html',
-      custom_data: { product_no: productNo, variant_code: variantCode },
     };
 
     console.log('[결제 요청 데이터]', paymentData);
@@ -99,15 +92,13 @@ export function initHomePage(): void {
           body: JSON.stringify({
             imp_uid: rsp.imp_uid,
             merchant_uid: rsp.merchant_uid,
-            totalPrice: rsp.paid_amount,
+            totalPrice: rsp.paid_amount, // 실제 결제 금액을 서버로 전송
             productName: rsp.name,
             buyerName: rsp.buyer_name,
             buyerPhone: rsp.buyer_tel,
             buyerEmail: rsp.buyer_email,
             buyerAddr: rsp.buyer_addr,
             buyerPostcode: rsp.buyer_postcode,
-            productNo: paymentData.custom_data.product_no,
-            variantCode: paymentData.custom_data.variant_code,
           }),
         })
           .then((response) => {
@@ -119,7 +110,7 @@ export function initHomePage(): void {
           .then((data) => {
             console.log('[서버 검증 응답]', data);
 
-            if (data.success && data.order_id) {
+            if (data.success) {
               resultDiv.innerHTML = `
                 <h2 class="success">✅ 결제가 정상적으로 완료되었습니다.</h2>
                 <p>주문번호: ${rsp.merchant_uid}</p>
@@ -127,10 +118,9 @@ export function initHomePage(): void {
                 <p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>
               `;
 
-              // 주문번호를 포함한 URL로 리다이렉션
-              const redirectUrl = `https://gurumauto.cafe24.com/myshop/order/list.html?order_id=${data.order_id}`;
+              // 주문이 성공적으로 생성되었으므로, 3초 후 페이지 이동
               setTimeout(() => {
-                window.location.href = redirectUrl;
+                window.location.href = 'https://gurumauto.cafe24.com/myshop/order/list.html';
               }, 3000);
             } else {
               resultDiv.innerHTML = `
@@ -157,7 +147,7 @@ export function initHomePage(): void {
   };
 
   if (productName && totalPrice && !isNaN(parseInt(totalPrice, 10))) {
-    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode, productNo, variantCode);
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
     return;
   }
 
@@ -174,7 +164,7 @@ export function initHomePage(): void {
 
     if (!event.data || event.data.type !== 'orderInfo') return;
 
-    const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode, productNo, variantCode } = event.data;
+    const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
 
     console.log('[postMessage 데이터]', event.data);
 
@@ -183,6 +173,6 @@ export function initHomePage(): void {
       return;
     }
 
-    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode, productNo, variantCode);
+    handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
   });
 }
