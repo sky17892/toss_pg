@@ -6,8 +6,7 @@ const IMP_API_SECRET = process.env.IMP_API_SECRET;
 const CAFE24_ACCESS_TOKEN = process.env.CAFE24_ACCESS_TOKEN;
 const CAFE24_STORE_URL = process.env.CAFE24_STORE_URL;
 
-// req와 res에 대한 타입 정의를 제거했습니다.
-export default async (req: any, res: any) => { 
+export default async (req: any, res: any) => {
     const logTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
     console.log(`[${logTime}] 서버리스 함수 호출 시작`);
 
@@ -20,9 +19,7 @@ export default async (req: any, res: any) => {
         buyerPhone,
         buyerEmail,
         buyerAddr,
-        buyerPostcode,
-        productNo,
-        variantCode
+        buyerPostcode
     } = req.body;
 
     if (!imp_uid || !merchant_uid) {
@@ -55,14 +52,17 @@ export default async (req: any, res: any) => {
             console.error(`[${logTime}] 결제 금액 불일치: API=${paymentData.amount}, 요청=${totalPrice}`);
             return res.status(400).json({ success: false, message: '결제 금액 불일치' });
         }
+
+        const productNoFromCustom = paymentData.custom_data?.product_no;
+        const variantCodeFromCustom = paymentData.custom_data?.variant_code;
         
         const cafe24OrderPayload = {
             "shop_no": 1,
             "order": {
                 "member_id": "guest",
                 "items": [{
-                    "product_no": productNo || paymentData.custom_data?.product_no,
-                    "variant_code": variantCode || paymentData.custom_data?.variant_code,
+                    "product_no": productNoFromCustom,
+                    "variant_code": variantCodeFromCustom,
                     "quantity": 1
                 }],
                 "payment_method_code": "card",
@@ -80,7 +80,7 @@ export default async (req: any, res: any) => {
                 "payment_gateway_code": "inicis"
             }
         };
-        
+
         console.log(`[${logTime}] 카페24 주문 페이로드 생성: ${JSON.stringify(cafe24OrderPayload)}`);
 
         const createCafe24Order = await axios({
