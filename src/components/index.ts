@@ -103,8 +103,8 @@ export function initHomePage(): void {
             buyerEmail: rsp.buyer_email,
             buyerAddr: rsp.buyer_addr,
             buyerPostcode: rsp.buyer_postcode,
-            productNo: paymentData.custom_data.product_no,
-            variantCode: paymentData.custom_data.variant_code,
+            productNo: paymentData.custom_data?.product_no,
+            variantCode: paymentData.custom_data?.variant_code,
           }),
         })
           .then((response) => {
