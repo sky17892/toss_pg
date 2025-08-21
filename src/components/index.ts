@@ -67,7 +67,7 @@ export function initHomePage(): void {
     const redirectBaseUrl = 'https://gurumauto.cafe24.com/myshop/order/list.html';
 
     const paymentData: RequestPayment = {
-      pg: 'html5_inicis',
+      pg: 'html5_inicis.MOI0559698', // 실결제 MID 포함
       pay_method: 'card',
       merchant_uid: orderId,
       name,
@@ -96,7 +96,7 @@ export function initHomePage(): void {
           body: JSON.stringify({
             imp_uid: rsp.imp_uid,
             merchant_uid: rsp.merchant_uid,
-            totalPrice: rsp.paid_amount, // 실제 결제 금액을 서버로 전송
+            totalPrice: rsp.paid_amount, // 실제 결제 금액
             productName: rsp.name,
             buyerName: rsp.buyer_name,
             buyerPhone: rsp.buyer_tel,
@@ -124,7 +124,6 @@ export function initHomePage(): void {
                 <p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>
               `;
 
-              // 주문이 성공적으로 생성되었으므로, 3초 후 페이지 이동
               const redirectUrl = `${redirectBaseUrl}?order_id=${data.order_id}`;
               setTimeout(() => {
                 window.location.href = redirectUrl;
