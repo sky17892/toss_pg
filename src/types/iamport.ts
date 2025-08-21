@@ -15,7 +15,7 @@ declare global {
  * 아임포트 결제 요청 파라미터 타입
  */
 export interface RequestPayment {
-  pg: string;               // PG사 이름만 (html5_inicis, kcp 등)
+  pg: 'html5_inicis';              // PG사 이름만 (html5_inicis, kcp 등)
   pay_method: 'card';       // 카드 결제만 사용
   merchant_uid: string;     // 주문 고유 번호
   name: string;             // 주문명
