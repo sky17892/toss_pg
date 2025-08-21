@@ -16,18 +16,18 @@ export function initHomePage(): void {
   home.classList.remove('hidden');
 
   if (!window.IMP) {
-    console.error('⚠️ 포트원 SDK가 로드되지 않았습니다.');
+    console.error('포트원 SDK가 로드되지 않았습니다.');
     return;
   }
 
   const IMP = window.IMP;
 
-  // ✅ Vercel 환경 변수 기반 아임포트 채널 키 초기화
-  const IMP_CHANNEL_KEY = import.meta.env.VITE_IMP_CHANNEL_KEY;
-  if (IMP_CHANNEL_KEY) {
-    IMP.init(IMP_CHANNEL_KEY);
+  // ✅ Vercel 환경 변수에서 채널 키 가져오기
+  const IMP_USER_CODE = import.meta.env.VITE_IMP_CHANNEL_KEY;
+  if (IMP_USER_CODE) {
+    IMP.init(IMP_USER_CODE);
   } else {
-    console.error('⚠️ Vercel 환경 변수에 IMP 채널 키가 설정되지 않았습니다.');
+    console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
     return;
   }
 
@@ -68,7 +68,7 @@ export function initHomePage(): void {
     const redirectBaseUrl = 'https://gurumauto.cafe24.com/myshop/order/list.html';
 
     const paymentData: RequestPayment = {
-      pg: 'html5_inicis', // ✅ 실결제용 PG 설정
+      pg: 'html5_inicis', // ✅ 실결제용 PG + MID
       pay_method: 'card',
       merchant_uid: orderId,
       name,
@@ -109,7 +109,9 @@ export function initHomePage(): void {
           }),
         })
           .then((response) => {
-            if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+            if (!response.ok) {
+              throw new Error(`서버 응답 오류: ${response.status}`);
+            }
             return response.json();
           })
           .then((data) => {
@@ -122,8 +124,11 @@ export function initHomePage(): void {
                 <p>결제 금액: ${rsp.paid_amount}원</p>
                 <p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>
               `;
+
               const redirectUrl = `${redirectBaseUrl}?order_id=${data.order_id}`;
-              setTimeout(() => { window.location.href = redirectUrl; }, 3000);
+              setTimeout(() => {
+                window.location.href = redirectUrl;
+              }, 3000);
             } else {
               resultDiv.innerHTML = `
                 <h2 class="error">❌ 결제 검증 실패</h2>
@@ -167,6 +172,7 @@ export function initHomePage(): void {
     if (!event.data || event.data.type !== 'orderInfo') return;
 
     const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
+
     console.log('[postMessage 데이터]', event.data);
 
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
