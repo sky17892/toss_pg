@@ -66,7 +66,7 @@ export function initHomePage(): void {
     const orderId = `ORDER-${Date.now()}`;
     const redirectBaseUrl = 'https://gurumauto.cafe24.com/myshop/order/list.html';
 
-    const paymentData: IamportPaymentOptions = {
+    const paymentData: RequestPayment = {
       pg: 'html5_inicis',
       pay_method: 'card',
       merchant_uid: orderId,
