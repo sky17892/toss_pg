@@ -4,7 +4,7 @@ declare global {
     IMP: {
       init: (accountId: string) => void;
       request_pay: (
-        params: RequestPayment,
+        params: IamportPaymentOptions,
         callback: (rsp: any) => void
       ) => void;
     };
@@ -14,8 +14,8 @@ declare global {
 /**
  * 아임포트 결제 요청 파라미터 타입
  */
-export interface RequestPayment {
-  pg: 'html5_inicis';              // PG사 이름만 (html5_inicis, kcp 등)
+export interface IamportPaymentOptions {
+  pg: 'html5_inicis';       // 결제사 선택 (실결제용 INICIS)
   pay_method: 'card';       // 카드 결제만 사용
   merchant_uid: string;     // 주문 고유 번호
   name: string;             // 주문명
@@ -26,9 +26,11 @@ export interface RequestPayment {
   buyer_addr?: string;
   buyer_postcode?: string;
   m_redirect_url?: string;  // 결제 완료 후 리다이렉트 URL
+
+  // 새로 추가된 custom_data 속성
   custom_data?: {
     product_no?: string | null;
     variant_code?: string | null;
-    [key: string]: any;
+    [key: string]: any;     // 다른 임의의 데이터도 허용
   };
 }
