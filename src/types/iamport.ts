@@ -47,20 +47,21 @@ export function requestPayment() {
   window.IMP.request_pay(
     {
       pg: "html5_inicis.MOI0559698", // PG사 + 실결제 MID
-      pay_method: "card",
-      merchant_uid: `order_${new Date().getTime()}`, // 주문번호 (유니크 값)
-      name: "테스트 상품",
-      amount: 100, // 결제 금액
-      buyer_email: "test@test.com",
-      buyer_name: "홍길동",
-      buyer_tel: "01012341234",
-      buyer_addr: "서울시 강남구 역삼동",
-      buyer_postcode: "123-456",
+      pay_method: "card", // 카드 결제만 사용
+      merchant_uid: "string", // 주문 고유 번호
+      name: "string", // 주문명
+      amount: 0, // 결제 금액 (원)
+      buyer_email: "string", // 선택값
+      buyer_name: "string", // 선택값
+      buyer_tel: "string", // 선택값
+      buyer_addr: "string", // 선택값
+      buyer_postcode: "string", // 선택값
+      m_redirect_url: "string", // 결제 완료 후 리다이렉트 URL (선택값)
       custom_data: {
-        product_no: "P12345",
-        variant_code: "V001"
-      }
-    },
+      product_no: "string | null",
+      variant_code: "string | null"
+    }
+  },
     (rsp) => {
       if (rsp.success) {
         // 결제 성공
