@@ -1,4 +1,4 @@
-import { requestPayment } from '../types/iamport';
+import { RequestPayment } from '../types/iamport';
 
 export function ListItemPage(): string {
   return `
