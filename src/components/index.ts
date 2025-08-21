@@ -22,8 +22,7 @@ export function initHomePage(): void {
 
   const IMP = window.IMP;
 
-  // ✅ Vercel 환경 변수에서 채널 키 가져오기
-  const IMP_USER_CODE = import.meta.env.VITE_IMP_CHANNEL_KEY;
+  const IMP_USER_CODE = import.meta.env.VITE_IMP_USER_CODE;
   if (IMP_USER_CODE) {
     IMP.init(IMP_USER_CODE);
   } else {
