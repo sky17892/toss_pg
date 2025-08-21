@@ -4,7 +4,7 @@ declare global {
     IMP: {
       init: (accountId: string) => void;
       request_pay: (
-        params: IamportPaymentOptions,
+        params: requestPayment,
         callback: (rsp: any) => void
       ) => void;
     };
