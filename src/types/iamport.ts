@@ -4,7 +4,7 @@ declare global {
     IMP: {
       init: (accountId: string) => void;
       request_pay: (
-        params: IamportPaymentOptions,
+        params: RequestPayment,
         callback: (rsp: any) => void
       ) => void;
     };
@@ -14,7 +14,7 @@ declare global {
 /**
  * 아임포트 결제 요청 파라미터 타입
  */
-export interface IamportPaymentOptions {
+export interface RequestPayment {
   pg: 'html5_inicis';       // 결제사 선택 (실결제용 INICIS)
   pay_method: 'card';       // 카드 결제만 사용
   merchant_uid: string;     // 주문 고유 번호
