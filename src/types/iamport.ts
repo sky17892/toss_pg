@@ -57,22 +57,10 @@ export function RequestPayment() {
       buyer_addr: "string", // 선택값
       buyer_postcode: "string", // 선택값
       m_redirect_url: "string", // 결제 완료 후 리다이렉트 URL (선택값)
-      custom_data: {
-      product_no: "string | null",
-      variant_code: "string | null"
-    }
-  },
-    (rsp) => {
-      if (rsp.success) {
-        // 결제 성공
-        console.log("✅ 결제 성공:", rsp);
-
-        // TODO: 서버에 결제 검증 요청 (signKey 사용)
-        // fetch("/api/payment/verify", { method: "POST", body: JSON.stringify(rsp) })
-      } else {
-        // 결제 실패
-        console.error("❌ 결제 실패:", rsp);
-      }
-    }
-  );
+      
+      custom_data?: {
+    product_no?: string | null;
+    variant_code?: string | null;
+    [key: string]: any; // 다른 임의의 데이터도 허용
+  };
 }
