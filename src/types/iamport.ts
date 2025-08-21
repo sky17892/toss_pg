@@ -4,7 +4,7 @@ declare global {
     IMP: {
       init: (accountId: string) => void;
       request_pay: (
-        params: requestPayment,
+        params: RequestPayment,
         callback: (rsp: any) => void
       ) => void;
     };
@@ -39,7 +39,7 @@ export interface IamportPaymentOptions {
 // 아임포트 결제 호출 예시
 // ============================
 
-export function requestPayment() {
+export function RequestPayment() {
   // 아임포트 초기화 (실결제용 가맹점 식별코드)
   window.IMP.init("channel-key-3d6834cb-3b1c-402b-ac80-ad309d7ee253");
 
