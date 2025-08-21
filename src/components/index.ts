@@ -21,14 +21,9 @@ export function initHomePage(): void {
   }
 
   const IMP = window.IMP;
-  const IMP_USER_CODE = import.meta.env.VITE_IMP_USER_CODE;
 
-  if (IMP_USER_CODE) {
-    IMP.init(IMP_USER_CODE);
-  } else {
-    console.error('포트원 가맹점 식별 코드가 설정되지 않았습니다.');
-    return;
-  }
+  // ✅ 고정된 가맹점 식별 코드 사용
+  IMP.init('channel-key-3d6834cb-3b1c-402b-ac80-ad309d7ee253');
 
   const params = new URLSearchParams(window.location.search);
   const productName = params.get('product');
@@ -67,7 +62,7 @@ export function initHomePage(): void {
     const redirectBaseUrl = 'https://gurumauto.cafe24.com/myshop/order/list.html';
 
     const paymentData: RequestPayment = {
-      pg: 'html5_inicis.MOI0559698', // 실결제 MID 포함
+      pg: 'html5_inicis.MOI0559698', // ✅ 실결제 MID
       pay_method: 'card',
       merchant_uid: orderId,
       name,
