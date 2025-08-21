@@ -22,7 +22,7 @@ export function initHomePage(): void {
 
   const IMP = window.IMP;
 
-  // ✅ 고정된 가맹점 식별 코드 사용
+  // ✅ 실결제용 가맹점 채널 키
   IMP.init('channel-key-3d6834cb-3b1c-402b-ac80-ad309d7ee253');
 
   const params = new URLSearchParams(window.location.search);
@@ -39,14 +39,6 @@ export function initHomePage(): void {
   const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
   const buyerPostcode = params.get('rzipcode1') || '';
 
-  console.log('productName:', productName);
-  console.log('totalPrice:', totalPrice);
-  console.log('buyerName:', buyerName);
-  console.log('buyerAddr:', buyerAddr);
-  console.log('buyerPhone:', buyerPhone);
-  console.log('buyerEmail:', buyerEmail);
-  console.log('buyerPostcode:', buyerPostcode);
-
   const handlePayment = (
     name: string,
     price: string | number,
@@ -62,7 +54,7 @@ export function initHomePage(): void {
     const redirectBaseUrl = 'https://gurumauto.cafe24.com/myshop/order/list.html';
 
     const paymentData: RequestPayment = {
-      pg: 'html5_inicis', // ✅ 실결제 MID
+      pg: 'html5_inicis',          // ✅ PG사 이름만
       pay_method: 'card',
       merchant_uid: orderId,
       name,
@@ -91,7 +83,7 @@ export function initHomePage(): void {
           body: JSON.stringify({
             imp_uid: rsp.imp_uid,
             merchant_uid: rsp.merchant_uid,
-            totalPrice: rsp.paid_amount, // 실제 결제 금액
+            totalPrice: rsp.paid_amount,
             productName: rsp.name,
             buyerName: rsp.buyer_name,
             buyerPhone: rsp.buyer_tel,
@@ -102,15 +94,8 @@ export function initHomePage(): void {
             variantCode: paymentData.custom_data?.variant_code,
           }),
         })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`서버 응답 오류: ${response.status}`);
-            }
-            return response.json();
-          })
+          .then((res) => res.json())
           .then((data) => {
-            console.log('[서버 검증 응답]', data);
-
             if (data.success) {
               resultDiv.innerHTML = `
                 <h2 class="success">✅ 결제가 정상적으로 완료되었습니다.</h2>
@@ -118,31 +103,20 @@ export function initHomePage(): void {
                 <p>결제 금액: ${rsp.paid_amount}원</p>
                 <p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>
               `;
-
-              const redirectUrl = `${redirectBaseUrl}?order_id=${data.order_id}`;
               setTimeout(() => {
-                window.location.href = redirectUrl;
+                window.location.href = `${redirectBaseUrl}?order_id=${data.order_id}`;
               }, 3000);
             } else {
-              resultDiv.innerHTML = `
-                <h2 class="error">❌ 결제 검증 실패</h2>
-                <p>메시지: ${data.message}</p>
-              `;
+              resultDiv.innerHTML = `<h2 class="error">❌ 결제 검증 실패</h2><p>${data.message}</p>`;
             }
           })
-          .catch((error) => {
-            console.error('[서버 오류]', error);
-            resultDiv.innerHTML = `
-              <h2 class="error">❌ 서버 오류로 결제 검증 실패</h2>
-              <p>${error.message}</p>
-            `;
+          .catch((err) => {
+            console.error('[서버 오류]', err);
+            resultDiv.innerHTML = `<h2 class="error">❌ 서버 오류</h2><p>${err.message}</p>`;
           });
       } else {
         console.error('[결제 실패 응답]', rsp);
-        resultDiv.innerHTML = `
-          <h2 class="error">❌ 결제에 실패했습니다</h2>
-          <p>실패 사유: ${rsp.error_msg}</p>
-        `;
+        resultDiv.innerHTML = `<h2 class="error">❌ 결제 실패</h2><p>사유: ${rsp.error_msg}</p>`;
       }
     });
   };
@@ -152,27 +126,18 @@ export function initHomePage(): void {
     return;
   }
 
+  // postMessage로 주문 정보 받을 때
   window.addEventListener('message', (event) => {
     const allowedOrigins = [
       'https://gurumauto.cafe24.com',
       'https://carpartment.store'
     ];
-
-    if (!allowedOrigins.includes(event.origin)) {
-      console.warn('허용되지 않은 도메인에서 온 메시지입니다.', event.origin);
-      return;
-    }
+    if (!allowedOrigins.includes(event.origin)) return;
 
     if (!event.data || event.data.type !== 'orderInfo') return;
 
     const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
-
-    console.log('[postMessage 데이터]', event.data);
-
-    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
-      location.href = 'https://toss-pg.vercel.app/';
-      return;
-    }
+    if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) return;
 
     handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
   });
