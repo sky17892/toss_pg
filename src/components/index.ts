@@ -1,4 +1,5 @@
 import { RequestPayment } from '../types/iamport';
+import axios from 'axios';
 
 export function ListItemPage(): string {
   return `
@@ -33,7 +34,6 @@ export function initHomePage(): void {
   const params = new URLSearchParams(window.location.search);
   const productName = params.get('product');
   const totalPrice = params.get('price');
-
   const buyerName = params.get('name') || '구매자';
   const buyerAddr = params.get('raddr1') || '';
   const buyerPhone = [
@@ -44,15 +44,7 @@ export function initHomePage(): void {
   const buyerEmail = (params.get('oemail1') || '') + '@' + (params.get('oemail2') || '');
   const buyerPostcode = params.get('rzipcode1') || '';
 
-  console.log('productName:', productName);
-  console.log('totalPrice:', totalPrice);
-  console.log('buyerName:', buyerName);
-  console.log('buyerAddr:', buyerAddr);
-  console.log('buyerPhone:', buyerPhone);
-  console.log('buyerEmail:', buyerEmail);
-  console.log('buyerPostcode:', buyerPostcode);
-
-  const handlePayment = (
+  const handlePayment = async (
     name: string,
     price: string | number,
     buyerEmail: string,
@@ -65,9 +57,46 @@ export function initHomePage(): void {
   ) => {
     const orderId = `ORDER-${Date.now()}`;
     const redirectBaseUrl = 'https://gurumauto.cafe24.com/myshop/order/list.html';
+    const resultDiv = document.getElementById('payment-result');
+    if (!resultDiv) return;
+
+    // ⭐ 1. 결제 시작 전, 카페24에 주문을 먼저 생성합니다. (결제 대기 상태)
+    try {
+      resultDiv.innerHTML = `<p>주문 정보를 생성하고 있습니다...</p>`;
+
+      const response = await axios.post(`https://${process.env.CAFE24_STORE_URL}/api/v2/admin/orders`, {
+          "shop_no": 1,
+          "order": {
+              "member_id": "guest",
+              "items": [{ "product_no": productNo, "variant_code": variantCode, "quantity": 1 }],
+              "payment_method_code": "card",
+              "payment_amount": parseInt(String(price), 10),
+              "buyer_name": buyerName,
+              "buyer_phone": buyerPhone,
+              "buyer_email": buyerEmail,
+              "receiver_name": buyerName,
+              "receiver_phone": buyerPhone,
+              "receiver_address1": buyerAddr,
+              "receiver_zipcode": buyerPostcode,
+              "payment_type": "P",
+              "payment_gateway_code": "inicis",
+              "status": "N00" // 결제 대기 상태 (카페24 상태 코드로 변경 필요)
+          }
+      }, {
+          headers: {
+              'Authorization': `Bearer ${process.env.CAFE24_ACCESS_TOKEN}`,
+              'Content-Type': 'application/json'
+          }
+      });
+      console.log(`[${orderId}] 카페24에 '결제 대기' 주문 생성 성공`);
+    } catch (error) {
+        console.error(`[${orderId}] '결제 대기' 주문 생성 실패:`, error.response?.data || error.message);
+        resultDiv.innerHTML = `<h2 class="error">❌ 주문 생성 실패</h2><p>다시 시도해 주세요.</p>`;
+        return;
+    }
 
     const paymentData: RequestPayment = {
-      pg: 'html5_inicis.MOI0559698', // ✅ 실결제용 PG + MID
+      pg: 'html5_inicis.MOI0559698',
       pay_method: 'card',
       merchant_uid: orderId,
       name,
@@ -84,12 +113,8 @@ export function initHomePage(): void {
     console.log('[결제 요청 데이터]', paymentData);
 
     IMP.request_pay(paymentData, function (rsp: any) {
-      const resultDiv = document.getElementById('payment-result');
-      if (!resultDiv) return;
-
       if (rsp.success) {
         console.log('[결제 성공 응답]', rsp);
-
         fetch('https://toss-pg.vercel.app/api/process-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -97,57 +122,45 @@ export function initHomePage(): void {
             imp_uid: rsp.imp_uid,
             merchant_uid: rsp.merchant_uid,
             totalPrice: rsp.paid_amount,
-            productName: rsp.name,
-            buyerName: rsp.buyer_name,
-            buyerPhone: rsp.buyer_tel,
-            buyerEmail: rsp.buyer_email,
-            buyerAddr: rsp.buyer_addr,
-            buyerPostcode: rsp.buyer_postcode,
-            productNo: paymentData.custom_data?.product_no,
-            variantCode: paymentData.custom_data?.variant_code,
+            // 기타 데이터는 서버에서 포트원 API를 통해 다시 조회하는 것이 안전
           }),
         })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`서버 응답 오류: ${response.status}`);
-            }
-            return response.json();
-          })
+          .then((response) => response.json())
           .then((data) => {
-            console.log('[서버 검증 응답]', data);
-
             if (data.success) {
-              resultDiv.innerHTML = `
-                <h2 class="success">✅ 결제가 정상적으로 완료되었습니다.</h2>
-                <p>주문번호: ${rsp.merchant_uid}</p>
-                <p>결제 금액: ${rsp.paid_amount}원</p>
-                <p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>
-              `;
-
-              const redirectUrl = `${redirectBaseUrl}?order_id=${data.order_id}`;
-              setTimeout(() => {
-                window.location.href = redirectUrl;
-              }, 3000);
+              resultDiv.innerHTML = `<h2 class="success">✅ 결제가 정상적으로 완료되었습니다.</h2><p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>`;
+              setTimeout(() => window.location.href = `${redirectBaseUrl}?order_id=${data.order_id}`, 3000);
             } else {
-              resultDiv.innerHTML = `
-                <h2 class="error">❌ 결제 검증 실패</h2>
-                <p>메시지: ${data.message}</p>
-              `;
+              resultDiv.innerHTML = `<h2 class="error">❌ 결제 검증 실패</h2><p>메시지: ${data.message}</p>`;
             }
           })
           .catch((error) => {
             console.error('[서버 오류]', error);
-            resultDiv.innerHTML = `
-              <h2 class="error">❌ 서버 오류로 결제 검증 실패</h2>
-              <p>${error.message}</p>
-            `;
+            resultDiv.innerHTML = `<h2 class="error">❌ 서버 오류로 결제 검증 실패</h2><p>${error.message}</p>`;
           });
       } else {
         console.error('[결제 실패 응답]', rsp);
         resultDiv.innerHTML = `
           <h2 class="error">❌ 결제에 실패했습니다</h2>
           <p>실패 사유: ${rsp.error_msg}</p>
+          <p>✨ 잠시 후 주문 내역 페이지로 이동합니다.</p>
         `;
+        // ⭐ 2. 결제 실패 시에도 서버에 상태 업데이트를 요청
+        fetch('https://toss-pg.vercel.app/api/process-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imp_uid: rsp.imp_uid,
+            merchant_uid: rsp.merchant_uid,
+            totalPrice: totalPrice,
+          }),
+        })
+        .then(() => {
+          setTimeout(() => window.location.href = `${redirectBaseUrl}?order_id=${rsp.merchant_uid}`, 3000);
+        })
+        .catch(error => {
+          console.error('[서버 오류]', error);
+        });
       }
     });
   };
@@ -158,27 +171,17 @@ export function initHomePage(): void {
   }
 
   window.addEventListener('message', (event) => {
-    const allowedOrigins = [
-      'https://gurumauto.cafe24.com',
-      'https://carpartment.store'
-    ];
-
+    const allowedOrigins = ['https://gurumauto.cafe24.com', 'https://carpartment.store'];
     if (!allowedOrigins.includes(event.origin)) {
       console.warn('허용되지 않은 도메인에서 온 메시지입니다.', event.origin);
       return;
     }
-
     if (!event.data || event.data.type !== 'orderInfo') return;
-
     const { productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode } = event.data;
-
-    console.log('[postMessage 데이터]', event.data);
-
     if (!totalPrice || isNaN(parseInt(totalPrice, 10)) || parseInt(totalPrice, 10) <= 0) {
       location.href = 'https://toss-pg.vercel.app/';
       return;
     }
-
     handlePayment(productName, totalPrice, buyerEmail, buyerName, buyerPhone, buyerAddr, buyerPostcode);
   });
 }
