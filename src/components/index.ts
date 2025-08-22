@@ -60,37 +60,24 @@ export function initHomePage(): void {
     const resultDiv = document.getElementById('payment-result');
     if (!resultDiv) return;
 
+    // ⭐ 1. 카페24 주문 생성을 위한 서버리스 함수 호출
     try {
       resultDiv.innerHTML = `<p>주문 정보를 생성하고 있습니다...</p>`;
-
-      // axios.post 호출 시, process.env 대신 import.meta.env 사용
-      await axios.post(`https://${import.meta.env.VITE_CAFE24_STORE_URL}/api/v2/admin/orders`, {
-        "shop_no": 1,
-        "order": {
-          "member_id": "guest",
-          "items": [{ "product_no": productNo, "variant_code": variantCode, "quantity": 1 }],
-          "payment_method_code": "card",
-          "payment_amount": parseInt(String(price), 10),
-          "buyer_name": buyerName,
-          "buyer_phone": buyerPhone,
-          "buyer_email": buyerEmail,
-          "receiver_name": buyerName,
-          "receiver_phone": buyerPhone,
-          "receiver_address1": buyerAddr,
-          "receiver_zipcode": buyerPostcode,
-          "payment_type": "P",
-          "payment_gateway_code": "inicis",
-          "status": "N00" // 결제 대기 상태 (카페24 상태 코드로 변경 필요)
-        }
-      }, {
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_CAFE24_ACCESS_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
+      
+      const createOrderRes = await axios.post('https://toss-pg.vercel.app/api/create-cafe24-order', {
+          merchant_uid: orderId,
+          totalPrice: parseInt(String(price), 10),
+          buyerName,
+          buyerPhone,
+          buyerEmail,
+          buyerAddr,
+          buyerPostcode,
+          productNo,
+          variantCode
       });
-      console.log(`[${orderId}] 카페24에 '결제 대기' 주문 생성 성공`);
+      console.log(`[${orderId}] 카페24에 '결제 대기' 주문 생성 요청 성공`, createOrderRes.data);
     } catch (error) {
-      console.error(`[${orderId}] '결제 대기' 주문 생성 실패:`, (error as any).response?.data || (error as Error).message);
+      console.error(`[${orderId}] '결제 대기' 주문 생성 요청 실패:`, (error as any).response?.data || (error as Error).message);
       resultDiv.innerHTML = `<h2 class="error">❌ 주문 생성 실패</h2><p>다시 시도해 주세요.</p>`;
       return;
     }
