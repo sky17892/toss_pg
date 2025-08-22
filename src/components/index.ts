@@ -63,7 +63,7 @@ export function initHomePage(): void {
     try {
       resultDiv.innerHTML = `<p>주문 정보를 생성하고 있습니다...</p>`;
 
-      await axios.post('https://toss-pg.vercel.app/api/create-cafe24-order', {
+      await axios.post('https://toss-pg.vercel.app/api/process-payment', {
           merchant_uid: orderId,
           totalPrice: parseInt(String(price), 10),
           buyerName,
