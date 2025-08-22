@@ -60,11 +60,10 @@ export function initHomePage(): void {
     const resultDiv = document.getElementById('payment-result');
     if (!resultDiv) return;
 
-    // ⭐ 1. 카페24 주문 생성을 위한 서버리스 함수 호출
     try {
       resultDiv.innerHTML = `<p>주문 정보를 생성하고 있습니다...</p>`;
-      
-      const createOrderRes = await axios.post('https://toss-pg.vercel.app/api/create-cafe24-order', {
+
+      await axios.post('https://toss-pg.vercel.app/api/create-cafe24-order', {
           merchant_uid: orderId,
           totalPrice: parseInt(String(price), 10),
           buyerName,
@@ -75,7 +74,7 @@ export function initHomePage(): void {
           productNo,
           variantCode
       });
-      console.log(`[${orderId}] 카페24에 '결제 대기' 주문 생성 요청 성공`, createOrderRes.data);
+      console.log(`[${orderId}] 카페24에 '결제 대기' 주문 생성 요청 성공`);
     } catch (error) {
       console.error(`[${orderId}] '결제 대기' 주문 생성 요청 실패:`, (error as any).response?.data || (error as Error).message);
       resultDiv.innerHTML = `<h2 class="error">❌ 주문 생성 실패</h2><p>다시 시도해 주세요.</p>`;
