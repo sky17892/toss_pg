@@ -1,4 +1,3 @@
-// api/process-payment.ts
 import axios from 'axios';
 
 const IMP_API_KEY = process.env.IMP_API_KEY;
@@ -6,24 +5,11 @@ const IMP_API_SECRET = process.env.IMP_API_SECRET;
 const CAFE24_ACCESS_TOKEN = process.env.CAFE24_ACCESS_TOKEN;
 const CAFE24_STORE_URL = process.env.CAFE24_STORE_URL;
 
-// req와 res에 대한 타입 정의를 제거했습니다.
 export default async (req: any, res: any) => {
     const logTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
     console.log(`[${logTime}] 서버리스 함수 호출 시작`);
 
-    const {
-        imp_uid,
-        merchant_uid,
-        productName,
-        totalPrice,
-        buyerName,
-        buyerPhone,
-        buyerEmail,
-        buyerAddr,
-        buyerPostcode,
-        productNo,
-        variantCode
-    } = req.body;
+    const { imp_uid, merchant_uid, totalPrice } = req.body;
 
     if (!imp_uid || !merchant_uid) {
         console.error(`[${logTime}] 필수 정보 누락: imp_uid=${imp_uid}, merchant_uid=${merchant_uid}`);
@@ -35,13 +21,9 @@ export default async (req: any, res: any) => {
             url: "https://api.iamport.kr/users/getToken",
             method: "post",
             headers: { "Content-Type": "application/json" },
-            data: {
-                imp_key: IMP_API_KEY,
-                imp_secret: IMP_API_SECRET
-            }
+            data: { imp_key: IMP_API_KEY, imp_secret: IMP_API_SECRET }
         });
         const { access_token } = getToken.data.response;
-        console.log(`[${logTime}] 포트원 액세스 토큰 발급 완료`);
 
         const getPaymentData = await axios({
             url: `https://api.iamport.kr/payments/${imp_uid}`,
@@ -49,57 +31,49 @@ export default async (req: any, res: any) => {
             headers: { "Authorization": access_token }
         });
         const paymentData = getPaymentData.data.response;
-        console.log(`[${logTime}] 포트원 결제 정보 조회 완료: merchant_uid=${paymentData.merchant_uid}`);
+        console.log(`[${logTime}] 포트원 결제 정보 조회 완료: merchant_uid=${paymentData.merchant_uid}, status=${paymentData.status}`);
 
-        if (paymentData.amount !== parseInt(String(totalPrice), 10)) {
-            console.error(`[${logTime}] 결제 금액 불일치: API=${paymentData.amount}, 요청=${totalPrice}`);
-            return res.status(400).json({ success: false, message: '결제 금액 불일치' });
-        }
-
-        const cafe24OrderPayload = {
-            "shop_no": 1,
-            "order": {
-                "member_id": "guest",
-                "items": [{
-                    "product_no": productNo || paymentData.custom_data?.product_no,
-                    "variant_code": variantCode || paymentData.custom_data?.variant_code,
-                    "quantity": 1
-                }],
-                "payment_method_code": "card",
-                "payment_amount": paymentData.amount,
-                "paid_at": paymentData.paid_at,
-                "buyer_name": buyerName,
-                "buyer_phone": buyerPhone,
-                "buyer_email": buyerEmail,
-                "receiver_name": buyerName,
-                "receiver_phone": buyerPhone,
-                "receiver_address1": buyerAddr,
-                "receiver_zipcode": buyerPostcode,
-                "paid_by_bank_code": paymentData.pg_provider,
-                "payment_type": "P",
-                "payment_gateway_code": "inicis"
+        // ⭐ 1. 결제 상태에 따라 분기 처리
+        if (paymentData.status === 'paid') {
+            if (paymentData.amount !== parseInt(String(totalPrice), 10)) {
+                // 금액 불일치 시 결제 취소 (안전 장치)
+                await axios({
+                    url: "https://api.iamport.kr/payments/cancel",
+                    method: "post",
+                    headers: { "Authorization": access_token },
+                    data: { reason: "금액 불일치", imp_uid: imp_uid }
+                });
+                console.error(`[${logTime}] 금액 불일치로 결제 취소: imp_uid=${imp_uid}`);
+                return res.status(400).json({ success: false, message: '결제 금액 불일치' });
             }
-        };
 
-        const createCafe24Order = await axios({
-            url: `https://${CAFE24_STORE_URL}/api/v2/admin/orders`,
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${CAFE24_ACCESS_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            data: cafe24OrderPayload
-        });
+            // ✅ 2. 결제 성공 시, 카페24 주문 상태를 '결제 완료'로 업데이트
+            const updateCafe24Order = await axios({
+                url: `https://${CAFE24_STORE_URL}/api/v2/admin/orders/${merchant_uid}`,
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${CAFE24_ACCESS_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                data: { "order": { "status": "C00" } } // 'C00'는 카페24 '결제 완료' 상태 코드입니다.
+            });
+            console.log(`[${logTime}] 카페24 주문 업데이트 성공: 주문번호=${merchant_uid}, 상태=결제 완료`);
+            res.status(200).json({ success: true, message: '주문 처리가 완료되었습니다.', order_id: merchant_uid });
 
-        const orderId = createCafe24Order.data.order.order_id;
-        console.log(`[${logTime}] 카페24 주문 생성 성공: 주문번호=${orderId}`);
-        
-        res.status(200).json({ 
-            success: true, 
-            message: '주문 처리가 완료되었습니다.',
-            order_id: orderId // 생성된 주문번호를 응답에 포함
-        });
-
+        } else {
+            // ❌ 3. 결제 실패/취소 시, 카페24 주문 상태를 '결제 실패'로 업데이트
+            const updateCafe24Order = await axios({
+                url: `https://${CAFE24_STORE_URL}/api/v2/admin/orders/${merchant_uid}`,
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${CAFE24_ACCESS_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                data: { "order": { "status": "F00" } } // 'F00'는 '결제 실패'를 나타내는 코드입니다.
+            });
+            console.log(`[${logTime}] 카페24 주문 업데이트 성공: 주문번호=${merchant_uid}, 상태=결제 실패`);
+            res.status(400).json({ success: false, message: `결제 실패: ${paymentData.fail_reason}` });
+        }
     } catch (error: any) {
         console.error(`[${logTime}] 주문 처리 중 오류 발생:`, error.response ? error.response.data : error.message);
         res.status(500).json({ success: false, message: '서버 오류로 주문 처리에 실패했습니다.' });
