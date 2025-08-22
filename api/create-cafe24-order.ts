@@ -1,5 +1,3 @@
-// api/create-cafe24-order.ts
-
 import axios from 'axios';
 
 const CAFE24_ACCESS_TOKEN = process.env.CAFE24_ACCESS_TOKEN;
@@ -49,7 +47,7 @@ export default async (req: any, res: any) => {
                 "receiver_zipcode": buyerPostcode,
                 "payment_type": "P",
                 "payment_gateway_code": "inicis",
-                "status": "N00" // '결제 대기' 상태 코드를 사용
+                "status": "N00"
             }
         };
 
@@ -67,7 +65,8 @@ export default async (req: any, res: any) => {
         res.status(200).json({ success: true, message: '결제 대기 주문 생성 성공', order_id: merchant_uid });
 
     } catch (error: any) {
-        console.error(`[${logTime}] 카페24 주문 생성 중 오류 발생:`, error.response ? error.response.data : error.message);
+        // ⭐ 서버에서 받은 상세 에러 메시지를 콘솔에 출력
+        console.error(`[${logTime}] 카페24 주문 생성 중 오류 발생:`, error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
         res.status(500).json({ success: false, message: '서버 오류로 주문 생성에 실패했습니다.' });
     }
 };
