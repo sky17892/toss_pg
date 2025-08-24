@@ -67,7 +67,7 @@ export function initHomePage(): void {
     const redirectBaseUrl = 'https://gurumauto.cafe24.com/myshop/order/list.html'; 
 
     const paymentData: RequestPayment = { 
-      pg: 'html5_inicis.MOI0559698', // ✅ 실결제용 PG + MID 
+      pg: 'html5_inicis.INIpayTest', // ✅ 실결제용 PG + MID 
       pay_method: 'card', 
       merchant_uid: orderId, 
       name, 
