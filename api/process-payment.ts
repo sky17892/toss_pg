@@ -10,7 +10,7 @@ export default async (req: any, res: any) => {
     const logTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
     console.log(`[${logTime}] 서버리스 함수 호출 시작`);
 
-    const {
+        const {
         imp_uid,
         merchant_uid,
         totalPrice,
@@ -20,7 +20,9 @@ export default async (req: any, res: any) => {
         buyerPhone,
         buyerEmail,
         buyerAddr,
-        buyerPostcode
+        buyerPostcode,
+        quantity,
+        shop_no
     } = req.body;
 
     if (!imp_uid || !merchant_uid) {
@@ -69,13 +71,13 @@ export default async (req: any, res: any) => {
 
         // ✅ 카페24 주문 생성
         const cafe24OrderPayload = {
-            "shop_no": 1,
+            "shop_no": shop_no || paymentData.custom_data?.shop_no || 1,
             "order": {
                 "member_id": "guest",
                 "items": [{
                     "product_no": productNo || paymentData.custom_data?.product_no,
                     "variant_code": variantCode || paymentData.custom_data?.variant_code,
-                    "quantity": 1
+                    "quantity": quantity || paymentData.custom_data?.quantity || 1
                 }],
                 "payment_method_code": "card",
                 "payment_amount": paymentData.amount,
